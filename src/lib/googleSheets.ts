@@ -80,3 +80,91 @@ export async function getAllLaporan() {
     status: row.get('Status'),
   }));
 }
+
+// ==========================================
+// MASTER PEGAWAI (Sheet Index 1)
+// ==========================================
+export async function getAllPegawai() {
+  const doc = await getSpreadsheet();
+  if (!doc) return [];
+  try {
+    const sheet = doc.sheetsByIndex[1];
+    const rows = await sheet.getRows();
+    return rows.map(row => row.toObject());
+  } catch (e) {
+    return [];
+  }
+}
+
+export async function addPegawaiRow(data: any) {
+  const doc = await getSpreadsheet();
+  if (!doc) return false;
+  try {
+    const sheet = doc.sheetsByIndex[1];
+    await sheet.loadHeaderRow().catch(() => sheet.setHeaderRow(Object.keys(data)));
+    await sheet.addRow(data);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+export async function deletePegawaiRow(rowIndex: number) {
+  const doc = await getSpreadsheet();
+  if (!doc) return false;
+  try {
+    const sheet = doc.sheetsByIndex[1];
+    const rows = await sheet.getRows();
+    if (rows[rowIndex]) {
+      await rows[rowIndex].delete();
+      return true;
+    }
+    return false;
+  } catch (e) {
+    return false;
+  }
+}
+
+// ==========================================
+// MASTER RUANGAN (Sheet Index 2)
+// ==========================================
+export async function getAllRuangan() {
+  const doc = await getSpreadsheet();
+  if (!doc) return [];
+  try {
+    const sheet = doc.sheetsByIndex[2];
+    const rows = await sheet.getRows();
+    return rows.map(row => row.toObject());
+  } catch (e) {
+    return [];
+  }
+}
+
+export async function addRuanganRow(data: any) {
+  const doc = await getSpreadsheet();
+  if (!doc) return false;
+  try {
+    const sheet = doc.sheetsByIndex[2];
+    await sheet.loadHeaderRow().catch(() => sheet.setHeaderRow(Object.keys(data)));
+    await sheet.addRow(data);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+export async function deleteRuanganRow(rowIndex: number) {
+  const doc = await getSpreadsheet();
+  if (!doc) return false;
+  try {
+    const sheet = doc.sheetsByIndex[2];
+    const rows = await sheet.getRows();
+    if (rows[rowIndex]) {
+      await rows[rowIndex].delete();
+      return true;
+    }
+    return false;
+  } catch (e) {
+    return false;
+  }
+}

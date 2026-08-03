@@ -65,8 +65,8 @@ export default function LaporInsidenPage() {
   const [unitPelapor, setUnitPelapor] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
 
-  const [masterPegawai, setMasterPegawai] = useState<string[]>(FALLBACK_PEGAWAI);
-  const [masterUnit, setMasterUnit] = useState<string[]>(FALLBACK_UNIT);
+  const [masterPegawai, setMasterPegawai] = useState<string[]>([]);
+  const [masterUnit, setMasterUnit] = useState<string[]>([]);
 
   // State untuk AI
   const [kronologi, setKronologi] = useState("");
@@ -74,25 +74,26 @@ export default function LaporInsidenPage() {
   const [aiInsights, setAiInsights] = useState<any>(null);
 
   useEffect(() => {
-    // Try to load uploaded excel data from localStorage
-    const localR = localStorage.getItem("ikp_master_ruangan");
-    const localP = localStorage.getItem("ikp_master_pegawai");
-    
-    if (localR) {
+    const fetchMasterData = async () => {
       try {
-        const data = JSON.parse(localR);
-        const units = data.map((row: any) => Object.values(row)[0] as string);
-        if (units.length > 0) setMasterUnit(Array.from(new Set(units)));
-      } catch (e) {}
-    }
-    
-    if (localP) {
-      try {
-        const data = JSON.parse(localP);
-        const employees = data.map((row: any) => Object.values(row)[0] as string);
-        if (employees.length > 0) setMasterPegawai(Array.from(new Set(employees)));
-      } catch (e) {}
-    }
+        const resR = await fetch('/api/master/ruangan');
+        const jsonR = await resR.json();
+        if (jsonR.data && jsonR.data.length > 0) {
+          const units = jsonR.data.map((row: any) => Object.values(row)[0] as string);
+          setMasterUnit(Array.from(new Set(units)));
+        }
+
+        const resP = await fetch('/api/master/pegawai');
+        const jsonP = await resP.json();
+        if (jsonP.data && jsonP.data.length > 0) {
+          const employees = jsonP.data.map((row: any) => Object.values(row)[0] as string);
+          setMasterPegawai(Array.from(new Set(employees)));
+        }
+      } catch (e) {
+        console.error("Gagal menarik data master dari Google Sheets");
+      }
+    };
+    fetchMasterData();
   }, []);
 
   const searchPatient = async () => {
