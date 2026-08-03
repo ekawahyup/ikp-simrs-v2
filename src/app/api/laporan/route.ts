@@ -72,8 +72,8 @@ export async function POST(req: Request) {
           });
 
           const notifyPromises = subscriptions
-            .filter(sub => targetEmails.has(sub.email))
-            .map(sub => {
+            .filter((sub: any) => targetEmails.has(sub.email))
+            .map((sub: any) => {
               return webpush.sendNotification({
                 endpoint: sub.endpoint,
                 keys: { p256dh: sub.p256dh, auth: sub.auth }
