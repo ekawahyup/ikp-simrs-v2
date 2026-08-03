@@ -196,9 +196,19 @@ export async function addAksesRow(data: any) {
     const sheet = await getAksesSheet();
     if (!sheet) return false;
     await sheet.loadHeaderRow().catch(() => sheet.setHeaderRow(['NAMA', 'EMAIL', 'PASSWORD', 'ROLE', 'UNIT']));
-    await sheet.addRow(data);
+    
+    // Gunakan array untuk bypass isu mapping header jika ada spasi tersembunyi
+    await sheet.addRow([
+      data.NAMA || data.Nama || '', 
+      data.EMAIL || data.Email || '', 
+      data.PASSWORD || data.Password || '', 
+      data.ROLE || data.Role || '', 
+      data.UNIT || data.Unit || ''
+    ]);
+    
     return true;
   } catch (e) {
+    console.error("Gagal menambahkan baris ke sheet akses:", e);
     return false;
   }
 }
