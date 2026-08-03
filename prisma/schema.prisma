@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  PELAPOR
+  KEPALA_UNIT
+  TIM_KPRS
+  DIREKSI
+  ADMIN_IT
+}
+
+enum IncidentType {
+  KPC      // Kejadian Potensial Cedera
+  KNC      // Kejadian Nyaris Cedera
+  KTC      // Kejadian Tidak Cedera
+  KTD      // Kejadian Tidak Diharapkan
+  SENTINEL // Kejadian Sentinel
+}
+
+enum RiskGrading {
+  BIRU
+  HIJAU
+  KUNING
+  MERAH
+  BELUM_DITENTUKAN
+}
+
+enum IncidentStatus {
+  LAPORAN_BARU
+  DIVERIFIKASI_UNIT
+  INVESTIGASI
+  SELESAI
+}
+
+model User {
+  id             String    @id @default(uuid())
+  name           String
+  email          String    @unique
+  passwordHash   String?
+  role           Role      @default(PELAPOR)
+  unit           String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  reportedIncidents Incident[] @relation("Reporter")
+  handledTasks      Investigation[] @relation("PIC")
+  auditLogs         AuditLog[]
+}
+
+model Incident {
+  id                String       @id @default(uuid())
+  reporterId        String?
+  reporter          User?        @relation("Reporter", fields: [reporterId], references: [id])
+  isAnonymous       Boolean      @default(false)
+  
+  // Patient Info (Pulled from SIMRS but stored for snapshot)
+  patientRm         String
+  patientName       String
+  patientAge        Int
+  room              String
+  
+  // Incident Details
+  incidentDate      DateTime
+  location          String
+  chronology        String       @db.Text
+  incidentType      IncidentType
+  immediateAction   String       @db.Text
+  handlerName       String
+  
+  // Grading & Status
+  riskGrading       RiskGrading  @default(BELUM_DITENTUKAN)
+  status            IncidentStatus @default(LAPORAN_BARU)
+  
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  investigation     Investigation?
+}
+
+model Investigation {
+  id              String    @id @default(uuid())
+  incidentId      String    @unique
+  incident        Incident  @relation(fields: [incidentId], references: [id])
+  
+  investigationType String    // "SEDERHANA" or "RCA"
+  rootCause       String?   @db.Text
+  actionPlan      String?   @db.Text
+  
+  picId           String?
+  pic             User?     @relation("PIC", fields: [picId], references: [id])
+  dueDate         DateTime?
+  
+  isCompleted     Boolean   @default(false)
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  target    String
+  ipAddress String?
+  timestamp DateTime @default(now())
+}

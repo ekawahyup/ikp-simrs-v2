@@ -1,0 +1,187 @@
+:root {
+  /* Medical Premium Color Palette */
+  --primary: 199 89% 48%;     /* Cerulean Blue */
+  --primary-hover: 199 89% 40%;
+  --secondary: 160 84% 39%;   /* Emerald/Teal */
+  --accent: 262 83% 58%;      /* Violet */
+  
+  /* Semantic Colors for Risk Grading */
+  --risk-blue: 217 91% 60%;
+  --risk-green: 142 71% 45%;
+  --risk-yellow: 48 96% 53%;
+  --risk-red: 348 83% 47%;
+  
+  /* Background & Surface */
+  --bg-body: 210 40% 98%;
+  --bg-surface: 0 0% 100%;
+  --bg-surface-glass: rgba(255, 255, 255, 0.7);
+  
+  /* Typography */
+  --text-main: 222 47% 11%;
+  --text-muted: 215 16% 47%;
+  
+  /* Borders & Shadows */
+  --border: 214 32% 91%;
+  --ring: 199 89% 48%;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+  
+  /* Border Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+}
+
+[data-theme='dark'] {
+  --bg-body: 222 47% 11%;
+  --bg-surface: 217 33% 17%;
+  --bg-surface-glass: rgba(30, 41, 59, 0.7);
+  
+  --text-main: 210 40% 98%;
+  --text-muted: 215 20% 65%;
+  
+  --border: 217 33% 25%;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: hsl(var(--bg-body));
+  color: hsl(var(--text-main));
+  font-family: var(--font-inter), sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Glassmorphism Utilities */
+.glass-panel {
+  background: var(--bg-surface-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: var(--shadow-glass);
+  border-radius: var(--radius-lg);
+}
+
+[data-theme='dark'] .glass-panel {
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Micro Animations */
+.hover-lift {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  font-size: 0.875rem;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+  color: white;
+  box-shadow: 0 4px 14px 0 hsla(var(--primary), 0.39);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px 0 hsla(var(--primary), 0.45);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--text-main));
+}
+
+.btn-outline:hover {
+  background: hsl(var(--border) / 0.5);
+}
+
+/* Forms */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: hsl(var(--text-main));
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--bg-surface));
+  color: hsl(var(--text-main));
+  font-family: inherit;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 3px hsla(var(--primary), 0.2);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Risk Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-biru { background-color: hsla(var(--risk-blue), 0.15); color: hsl(var(--risk-blue)); }
+.badge-hijau { background-color: hsla(var(--risk-green), 0.15); color: hsl(var(--risk-green)); }
+.badge-kuning { background-color: hsla(var(--risk-yellow), 0.2); color: hsl(var(--risk-yellow)); }
+.badge-merah { background-color: hsla(var(--risk-red), 0.15); color: hsl(var(--risk-red)); }
+
+/* Layout Utilities */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
