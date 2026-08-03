@@ -168,3 +168,68 @@ export async function deleteRuanganRow(rowIndex: number) {
     return false;
   }
 }
+
+// ==========================================
+// MANAJEMEN AKSES & PENGGUNA (Tab "akses")
+// ==========================================
+export async function getAksesSheet() {
+  const doc = await getSpreadsheet();
+  if (!doc) return null;
+  // Cari berdasarkan judul sheet, abaikan case
+  const sheet = Object.values(doc.sheetsByTitle).find(s => s.title.toLowerCase() === 'akses');
+  return sheet || null;
+}
+
+export async function getAllAkses() {
+  try {
+    const sheet = await getAksesSheet();
+    if (!sheet) return [];
+    const rows = await sheet.getRows();
+    return rows.map(row => row.toObject());
+  } catch (e) {
+    return [];
+  }
+}
+
+export async function addAksesRow(data: any) {
+  try {
+    const sheet = await getAksesSheet();
+    if (!sheet) return false;
+    await sheet.loadHeaderRow().catch(() => sheet.setHeaderRow(['Nama', 'Email', 'Password', 'Role', 'Unit']));
+    await sheet.addRow(data);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+export async function updateAksesRow(rowIndex: number, data: any) {
+  try {
+    const sheet = await getAksesSheet();
+    if (!sheet) return false;
+    const rows = await sheet.getRows();
+    if (rows[rowIndex]) {
+      Object.assign(rows[rowIndex], data);
+      await rows[rowIndex].save();
+      return true;
+    }
+    return false;
+  } catch (e) {
+    return false;
+  }
+}
+
+export async function deleteAksesRow(rowIndex: number) {
+  try {
+    const sheet = await getAksesSheet();
+    if (!sheet) return false;
+    const rows = await sheet.getRows();
+    if (rows[rowIndex]) {
+      await rows[rowIndex].delete();
+      return true;
+    }
+    return false;
+  } catch (e) {
+    return false;
+  }
+}

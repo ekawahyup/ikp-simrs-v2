@@ -1,7 +1,6 @@
 import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { compare } from "bcryptjs"
-import prisma from "./lib/prisma"
+import { getAllAkses } from "./lib/googleSheets"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
@@ -15,38 +14,43 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
         
-        if (credentials?.email === "admin@rsdgunungjati.id" && credentials?.password === "admin123") {
-          return {
-            id: "admin-123",
-            email: "admin@rsdgunungjati.id",
-            name: "Administrator IT",
-            role: "ADMIN_IT",
-            unit: "Instalasi SIMRS",
+        try {
+          const users = await getAllAkses();
+          
+          // Find user by email
+          const user = users.find((u: any) => u.Email === credentials.email);
+          
+          if (!user) {
+            // Fallback to hardcoded admin if google sheets has no users yet or fails
+            if (credentials.email === "admin@rsdgunungjati.id" && credentials.password === "admin123") {
+              return {
+                id: "admin-123",
+                email: "admin@rsdgunungjati.id",
+                name: "Administrator IT",
+                role: "ADMIN_IT",
+                unit: "Instalasi SIMRS",
+              }
+            }
+            return null;
           }
+          
+          // Note: In a real production app, password should be hashed. 
+          // But per user requirements, it's plaintext in the Sheet.
+          if (user.Password !== credentials.password) {
+            return null;
+          }
+          
+          return {
+            id: user.Email, // Using email as ID
+            email: user.Email,
+            name: user.Nama,
+            role: user.Role,
+            unit: user.Unit,
+          }
+        } catch (e) {
+          console.error("Auth Error:", e);
+          return null;
         }
-        
-        return null;
-        
-        /* 
-        // Temporarily commented out for demo without Postgres setup
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string }
-        })
-        
-        if (!user || !user.passwordHash) return null
-        
-        const isPasswordValid = await compare(credentials.password as string, user.passwordHash)
-        
-        if (!isPasswordValid) return null
-        
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          unit: user.unit,
-        }
-        */
       }
     })
   ],
