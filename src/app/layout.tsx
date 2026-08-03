@@ -19,6 +19,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id">
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#0ea5e9" />
+      </head>
       <body className={`${inter.variable} font-sans`}>
         {children}
       </body>

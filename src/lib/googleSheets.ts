@@ -213,6 +213,50 @@ export async function addAksesRow(data: any) {
   }
 }
 
+// ==========================================
+// PUSH NOTIFICATION SUBSCRIPTIONS (Tab "subscriptions")
+// ==========================================
+export async function getSubscriptionSheet() {
+  const doc = await getDoc();
+  if (!doc) return null;
+  return Object.values(doc.sheetsByTitle).find(s => s.title.toLowerCase() === 'subscriptions') || null;
+}
+
+export async function addSubscription(data: { email: string, endpoint: string, p256dh: string, auth: string }) {
+  try {
+    const sheet = await getSubscriptionSheet();
+    if (!sheet) return false;
+    
+    // Ensure header row exists
+    await sheet.loadHeaderRow().catch(() => sheet.setHeaderRow(['EMAIL', 'ENDPOINT', 'P256DH', 'AUTH']));
+    
+    // Use array to bypass header mapping issues
+    await sheet.addRow([data.email, data.endpoint, data.p256dh, data.auth]);
+    return true;
+  } catch (e) {
+    console.error("Failed to add subscription to Google Sheets:", e);
+    return false;
+  }
+}
+
+export async function getSubscriptions() {
+  try {
+    const sheet = await getSubscriptionSheet();
+    if (!sheet) return [];
+    
+    const rows = await sheet.getRows();
+    return rows.map(row => ({
+      email: row.get('EMAIL') || row.get('Email') || row.get('email'),
+      endpoint: row.get('ENDPOINT') || row.get('Endpoint') || row.get('endpoint'),
+      p256dh: row.get('P256DH') || row.get('P256dh') || row.get('p256dh'),
+      auth: row.get('AUTH') || row.get('Auth') || row.get('auth')
+    }));
+  } catch (e) {
+    console.error("Failed to get subscriptions from Google Sheets:", e);
+    return [];
+  }
+}
+
 export async function updateAksesRow(rowIndex: number, data: any) {
   try {
     const sheet = await getAksesSheet();

@@ -2,6 +2,7 @@ import { auth, signOut } from "@/auth";
 import { redirect } from "next/navigation";
 import { LogOut, Users, Activity, FileText } from "lucide-react";
 import Link from "next/link";
+import PushManager from "@/components/PushManager";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -50,6 +51,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <main style={{ flex: 1, padding: '3rem', overflowY: 'auto', height: '100vh' }}>
         {children}
       </main>
+      <PushManager />
     </div>
   );
 }

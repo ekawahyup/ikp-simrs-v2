@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server';
-import { addLaporanRow, getAllLaporan } from '@/lib/googleSheets';
+import { addLaporanRow, getAllLaporan, getSubscriptions, getAllAkses } from '@/lib/googleSheets';
 import { auth } from '@/auth';
+import webpush from 'web-push';
+
+webpush.setVapidDetails(
+  process.env.VAPID_SUBJECT || 'mailto:admin@test.com',
+  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '',
+  process.env.VAPID_PRIVATE_KEY || ''
+);
 
 export async function GET() {
   try {
@@ -40,6 +47,46 @@ export async function POST(req: Request) {
     const success = await addLaporanRow(body);
     
     if (success) {
+      try {
+        const subscriptions = await getSubscriptions();
+        if (subscriptions.length > 0) {
+          const users = await getAllAkses();
+          const targetEmails = new Set();
+          
+          for (const u of users) {
+            const role = u.Role || u.ROLE || u.role;
+            const email = u.Email || u.EMAIL || u.email;
+            const units = (u.Unit || u.UNIT || u.unit || '').split(',').map((s: string)=>s.trim());
+            
+            if (role === 'KOMITE_MUTU' || role === 'ADMIN_IT') {
+              targetEmails.add(email);
+            } else if (role === 'VERIFIKATOR' && (units.includes(body.unitPelapor) || units.includes(body.lokasi))) {
+              targetEmails.add(email);
+            }
+          }
+
+          const payload = JSON.stringify({
+            title: 'Insiden Keselamatan Pasien Baru',
+            body: `Dilaporkan dari: ${body.unitPelapor || 'Tidak diketahui'}`,
+            url: '/dashboard/laporan'
+          });
+
+          const notifyPromises = subscriptions
+            .filter(sub => targetEmails.has(sub.email))
+            .map(sub => {
+              return webpush.sendNotification({
+                endpoint: sub.endpoint,
+                keys: { p256dh: sub.p256dh, auth: sub.auth }
+              }, payload).catch(e => console.error("Push Error", e));
+            });
+          
+          // Fire and forget, don't wait for all to finish if it takes too long
+          Promise.allSettled(notifyPromises);
+        }
+      } catch (pushErr) {
+        console.error("Failed to send push notifications", pushErr);
+      }
+
       return NextResponse.json({ message: 'Berhasil disimpan ke Google Sheets' });
     } else {
       return NextResponse.json({ message: 'Google Sheets belum dikonfigurasi, beralih ke Local Storage.' }, { status: 202 });
