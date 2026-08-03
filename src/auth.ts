@@ -17,8 +17,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         try {
           const users = await getAllAkses();
           
-          // Find user by email
-          const user = users.find((u: any) => u.Email === credentials.email);
+          // Find user by email (case-insensitive column check)
+          const user = users.find((u: any) => (u.Email || u.EMAIL || u.email) === credentials.email);
           
           if (!user) {
             // Fallback to hardcoded admin if google sheets has no users yet or fails
@@ -36,16 +36,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           
           // Note: In a real production app, password should be hashed. 
           // But per user requirements, it's plaintext in the Sheet.
-          if (user.Password !== credentials.password) {
+          const userPassword = user.Password || user.PASSWORD || user.password;
+          if (userPassword !== credentials.password) {
             return null;
           }
           
           return {
-            id: user.Email, // Using email as ID
-            email: user.Email,
-            name: user.Nama,
-            role: user.Role,
-            unit: user.Unit,
+            id: user.Email || user.EMAIL || user.email,
+            email: user.Email || user.EMAIL || user.email,
+            name: user.Nama || user.NAMA || user.nama,
+            role: user.Role || user.ROLE || user.role,
+            unit: user.Unit || user.UNIT || user.unit,
           }
         } catch (e) {
           console.error("Auth Error:", e);

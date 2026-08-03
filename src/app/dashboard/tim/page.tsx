@@ -143,13 +143,13 @@ export default function TimPage() {
       const json = await res.json();
       if (json.data) {
         setUsers(json.data.map((row: any, index: number) => ({
-          id: row.Email,
+          id: row.Email || row.EMAIL || row.email,
           index: index,
-          name: row.Nama,
-          email: row.Email,
-          password: row.Password,
-          role: row.Role,
-          unit: row.Unit
+          name: row.Nama || row.NAMA || row.nama,
+          email: row.Email || row.EMAIL || row.email,
+          password: row.Password || row.PASSWORD || row.password,
+          role: row.Role || row.ROLE || row.role,
+          unit: row.Unit || row.UNIT || row.unit
         })));
       }
     } catch (e) {
@@ -217,11 +217,11 @@ export default function TimPage() {
     setIsSaving(true);
     
     const rowData = {
-      Nama: activeUser.name,
-      Email: activeUser.email,
-      Password: activeUser.password,
-      Role: activeUser.role,
-      Unit: activeUnits.join(', ')
+      NAMA: activeUser.name,
+      EMAIL: activeUser.email,
+      PASSWORD: activeUser.password,
+      ROLE: activeUser.role,
+      UNIT: activeUnits.join(', ')
     };
 
     try {

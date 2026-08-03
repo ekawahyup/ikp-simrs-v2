@@ -195,7 +195,7 @@ export async function addAksesRow(data: any) {
   try {
     const sheet = await getAksesSheet();
     if (!sheet) return false;
-    await sheet.loadHeaderRow().catch(() => sheet.setHeaderRow(['Nama', 'Email', 'Password', 'Role', 'Unit']));
+    await sheet.loadHeaderRow().catch(() => sheet.setHeaderRow(['NAMA', 'EMAIL', 'PASSWORD', 'ROLE', 'UNIT']));
     await sheet.addRow(data);
     return true;
   } catch (e) {
