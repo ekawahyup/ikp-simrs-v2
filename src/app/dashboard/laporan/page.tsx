@@ -15,14 +15,29 @@ export default function LaporanPage() {
   const [reports, setReports] = useState<any[]>(DUMMY_REPORTS);
 
   useEffect(() => {
-    // Muat laporan baru dari localStorage jika ada
-    const localReports = localStorage.getItem("ikp_reports");
-    if (localReports) {
+    const fetchData = async () => {
+      let mergedReports: any[] = [];
       try {
-        const parsed = JSON.parse(localReports);
-        setReports([...parsed, ...DUMMY_REPORTS]);
-      } catch (e) {}
-    }
+        const res = await fetch('/api/laporan');
+        const json = await res.json();
+        
+        if (!json.fallback && json.data) {
+          mergedReports = [...json.data];
+        } else {
+          // Fallback ke localStorage
+          const localReports = localStorage.getItem("ikp_reports");
+          if (localReports) mergedReports = [...JSON.parse(localReports)];
+        }
+      } catch (e) {
+        // Error network, fallback ke localStorage
+        const localReports = localStorage.getItem("ikp_reports");
+        if (localReports) mergedReports = [...JSON.parse(localReports)];
+      }
+
+      setReports([...mergedReports, ...DUMMY_REPORTS]);
+    };
+
+    fetchData();
   }, []);
 
   const getBadgeClass = (grading: string) => {
@@ -58,7 +73,7 @@ export default function LaporanPage() {
               <tr key={report.id} onClick={() => router.push(`/dashboard/laporan/${report.id}`)} style={{ borderBottom: '1px solid hsl(var(--border))', transition: 'background 0.2s' }} className="hover-row">
                 <td style={{ padding: '1rem', fontSize: '0.875rem' }}>{report.tanggal}</td>
                 <td style={{ padding: '1rem', fontSize: '0.875rem' }}>
-                  <strong style={{ display: 'block', textTransform: 'capitalize' }}>{report.pasien}</strong>
+                  <strong style={{ display: 'block', textTransform: 'capitalize' }}>{report.pasien || report.pasienName}</strong>
                   <span style={{color: 'hsl(var(--text-muted))'}}>{report.rmRoom}</span>
                 </td>
                 <td style={{ padding: '1rem', fontSize: '0.875rem' }}>{report.jenis}</td>

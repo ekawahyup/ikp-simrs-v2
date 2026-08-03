@@ -146,15 +146,35 @@ export default function LaporInsidenPage() {
     const report = {
       id: Math.random().toString(36).substr(2, 9),
       tanggal: formattedDate,
-      pasien: patientData ? `${patientData.name}` : `Pasien Belum Dicari`,
+      namaPelapor: isAnonymous ? "Anonim" : namaPelapor,
+      unitPelapor: unitPelapor,
+      pasienName: patientData ? patientData.name : "Pasien Belum Dicari",
       rmRoom: patientData ? `${rm} - ${patientData.room}` : `${rm} - ${unitPelapor}`,
+      waktuInsiden: waktuRaw,
+      lokasi: formData.get("lokasi") as string,
       jenis: formData.get("jenis") as string,
-      grading: "BELUM DIGRADING", 
+      kronologi: kronologi,
+      grading: aiInsights ? aiInsights.grading : "BELUM DIGRADING", 
       status: "Laporan Baru"
     };
 
-    const existing = JSON.parse(localStorage.getItem("ikp_reports") || "[]");
-    localStorage.setItem("ikp_reports", JSON.stringify([report, ...existing]));
+    try {
+      const res = await fetch('/api/laporan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(report)
+      });
+      
+      // Jika Google Sheets gagal/belum di-setup (status 202), simpan ke localStorage
+      if (res.status === 202 || res.status === 500) {
+        const existing = JSON.parse(localStorage.getItem("ikp_reports") || "[]");
+        localStorage.setItem("ikp_reports", JSON.stringify([report, ...existing]));
+      }
+    } catch (e) {
+      // Fallback
+      const existing = JSON.parse(localStorage.getItem("ikp_reports") || "[]");
+      localStorage.setItem("ikp_reports", JSON.stringify([report, ...existing]));
+    }
 
     setSuccess(true);
   };
