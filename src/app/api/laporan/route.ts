@@ -1,12 +1,30 @@
 import { NextResponse } from 'next/server';
 import { addLaporanRow, getAllLaporan } from '@/lib/googleSheets';
+import { auth } from '@/auth';
 
 export async function GET() {
   try {
-    const data = await getAllLaporan();
+    const session = await auth();
+    if (!session || !session.user) {
+      return NextResponse.json({ error: 'Unauthorized', fallback: true }, { status: 401 });
+    }
+
+    let data = await getAllLaporan();
     if (!data || data.length === 0) {
       return NextResponse.json({ fallback: true, data: [] });
     }
+
+    // Role-Based Filtering
+    const userRole = session.user.role;
+    const userUnits = session.user.unit ? session.user.unit.split(',').map((u: string) => u.trim()) : [];
+
+    if (userRole === 'VERIFIKATOR') {
+      data = data.filter((report: any) => userUnits.includes(report.unitPelapor) || userUnits.includes(report.lokasi));
+    } else if (userRole === 'PELAPOR') {
+      data = data.filter((report: any) => report.namaPelapor === session.user.name);
+    }
+    // ADMIN_IT & KOMITE_MUTU see all
+
     return NextResponse.json({ fallback: false, data });
   } catch (error: any) {
     console.error("GSheet Get Error:", error);

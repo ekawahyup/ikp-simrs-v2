@@ -23,18 +23,12 @@ export default function LaporanPage() {
         
         if (!json.fallback && json.data) {
           mergedReports = [...json.data];
-        } else {
-          // Fallback ke localStorage
-          const localReports = localStorage.getItem("ikp_reports");
-          if (localReports) mergedReports = [...JSON.parse(localReports)];
         }
       } catch (e) {
-        // Error network, fallback ke localStorage
-        const localReports = localStorage.getItem("ikp_reports");
-        if (localReports) mergedReports = [...JSON.parse(localReports)];
+        console.error(e);
       }
 
-      setReports([...mergedReports, ...DUMMY_REPORTS]);
+      setReports(mergedReports);
     };
 
     fetchData();
