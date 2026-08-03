@@ -28,6 +28,8 @@ function MultiSearchableSelect({ options, values, onChange, placeholder }: { opt
     } else {
       onChange([...values, opt]);
     }
+    setIsOpen(false);
+    setSearch("");
   };
 
   return (
@@ -75,7 +77,6 @@ function MultiSearchableSelect({ options, values, onChange, placeholder }: { opt
               <div style={{ padding: '0.5rem', color: 'hsl(var(--text-muted))', fontSize: '0.875rem' }}>Tidak ditemukan</div>
             )}
           </div>
-          <button type="button" onClick={() => setIsOpen(false)} className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem', padding: '0.5rem' }}>Selesai</button>
         </div>
       )}
     </div>
