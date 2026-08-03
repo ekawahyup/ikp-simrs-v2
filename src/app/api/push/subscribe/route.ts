@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     // P256dh and Auth are base64 strings used to encrypt the payload
     const p256dh = keys.p256dh;
     const authKey = keys.auth;
-    const email = session.user.email;
+    const email = session.user.email || '';
 
     const success = await addSubscription({ email, endpoint, p256dh, auth: authKey });
     
