@@ -1,10 +1,31 @@
 import { NextResponse } from 'next/server';
 import { getAllAkses, addAksesRow, deleteAksesRow } from '@/lib/googleSheets';
+import { auth } from '@/auth';
 
 export async function GET() {
   try {
-    const data = await getAllAkses();
-    return NextResponse.json({ data, fallback: data.length === 0 });
+    const session = await auth();
+    if (!session || !session.user) {
+      return NextResponse.json({ error: 'Unauthorized', fallback: true }, { status: 401 });
+    }
+
+    let data = await getAllAkses();
+    if (data.length === 0) {
+      return NextResponse.json({ data, fallback: true });
+    }
+
+    const userRole = session.user.role;
+    const userUnits = session.user.unit ? session.user.unit.split(',').map((u: string) => u.trim()) : [];
+
+    if (userRole === 'VERIFIKATOR') {
+      // Hanya tampilkan pengguna (PELAPOR/VERIFIKATOR) yang unitnya beririsan dengan unit Verifikator ini
+      data = data.filter((row: any) => {
+        const rowUnits = (row.Unit || row.UNIT || row.unit || '').split(',').map((u: string) => u.trim());
+        return rowUnits.some((ru: string) => userUnits.includes(ru));
+      });
+    }
+
+    return NextResponse.json({ data, fallback: false });
   } catch (error) {
     return NextResponse.json({ fallback: true, data: [] }, { status: 202 });
   }

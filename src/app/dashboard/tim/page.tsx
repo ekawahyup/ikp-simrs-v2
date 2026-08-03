@@ -135,6 +135,13 @@ export default function TimPage() {
 
   const [masterPegawai, setMasterPegawai] = useState<string[]>([]);
   const [masterUnit, setMasterUnit] = useState<string[]>([]);
+  const [session, setSession] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/auth/session').then(res => res.json()).then(data => {
+      if (data && data.user) setSession(data);
+    });
+  }, []);
 
   const fetchUsers = async () => {
     setIsLoading(true);
@@ -394,16 +401,20 @@ export default function TimPage() {
                 <label className="form-label">Peran / Level</label>
                 <select className="form-select" required value={activeUser.role || 'PELAPOR'} onChange={e => setActiveUser({...activeUser, role: e.target.value as UserRole})}>
                   <option value="PELAPOR">Petugas Pelapor</option>
-                  <option value="VERIFIKATOR">Verifikator</option>
-                  <option value="KOMITE_MUTU">Komite Mutu (KPRS)</option>
-                  <option value="ADMIN_IT">Administrator IT</option>
+                  {session?.user?.role !== 'VERIFIKATOR' && (
+                    <>
+                      <option value="VERIFIKATOR">Verifikator</option>
+                      <option value="KOMITE_MUTU">Komite Mutu (KPRS)</option>
+                      <option value="ADMIN_IT">Administrator IT</option>
+                    </>
+                  )}
                 </select>
               </div>
 
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Unit Tugas (Bisa Pilih Lebih Dari Satu)</label>
                 <MultiSearchableSelect 
-                  options={masterUnit} 
+                  options={session?.user?.role === 'VERIFIKATOR' && session?.user?.unit ? session.user.unit.split(',').map((u:string) => u.trim()) : masterUnit} 
                   values={activeUnits} 
                   onChange={(vals) => setActiveUnits(vals)}
                   placeholder="Pilih unit/ruangan..."

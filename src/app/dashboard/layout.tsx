@@ -22,11 +22,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <FileText size={20} /> Laporan Masuk
           </Link>
           
+          {['ADMIN_IT', 'VERIFIKATOR'].includes(session?.user?.role) && (
+            <Link href="/dashboard/tim" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', borderRadius: 'var(--radius-md)', color: 'hsl(var(--text-muted))', textDecoration: 'none', fontWeight: 500 }} className="hover-lift">
+              <Users size={20} /> Tim & Akses
+            </Link>
+          )}
+
           {session?.user?.role === 'ADMIN_IT' && (
             <>
-              <Link href="/dashboard/tim" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', borderRadius: 'var(--radius-md)', color: 'hsl(var(--text-muted))', textDecoration: 'none', fontWeight: 500 }} className="hover-lift">
-                <Users size={20} /> Tim & Akses
-              </Link>
               <div style={{ margin: '1rem 0', height: '1px', background: 'hsl(var(--border))' }}></div>
               <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'hsl(var(--text-muted))', textTransform: 'uppercase', letterSpacing: '0.05em', paddingLeft: '0.75rem' }}>Administrator</span>
               <Link href="/dashboard/master" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', borderRadius: 'var(--radius-md)', color: 'hsl(var(--text-muted))', textDecoration: 'none', fontWeight: 500 }} className="hover-lift">
