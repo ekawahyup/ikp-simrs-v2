@@ -19,6 +19,8 @@ export default function PushManager() {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [showBanner, setShowBanner] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const checkSubscription = async () => {
     try {
       const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
       const subscription = await registration.pushManager.getSubscription();
