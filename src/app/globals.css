@@ -185,3 +185,30 @@ body {
   margin: 0 auto;
   padding: 0 1.5rem;
 }
+
+/* Sidebar Responsive */
+@media (max-width: 768px) {
+  .mobile-menu-btn {
+    display: flex !important;
+  }
+  
+  .sidebar-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 45;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .sidebar-container.open {
+    transform: translateX(0);
+  }
+  
+  .dashboard-main {
+    padding-top: 5rem !important; /* Make room for the hamburger menu */
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}

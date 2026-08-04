@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { LogOut, Users, Activity, FileText } from "lucide-react";
 import Link from "next/link";
 import PushManager from "@/components/PushManager";
+import MobileSidebarWrapper from "@/components/MobileSidebarWrapper";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -10,8 +11,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div style={{ minHeight: '100vh', background: 'hsl(var(--bg-body))', display: 'flex' }}>
-      <aside style={{ width: '250px', background: 'hsl(var(--bg-surface))', borderRight: '1px solid hsl(var(--border))', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontWeight: 700, fontSize: '1.125rem', color: 'hsl(var(--primary))' }}>
+      <MobileSidebarWrapper>
+        <aside style={{ width: '250px', background: 'hsl(var(--bg-surface))', borderRight: '1px solid hsl(var(--border))', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '2rem', height: '100vh', overflowY: 'auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontWeight: 700, fontSize: '1.125rem', color: 'hsl(var(--primary))' }}>
           <img src="/logo.png" alt="Logo" width={32} height={32} style={{ objectFit: 'contain' }} />
           <span>IKP Dashboard</span>
         </div>
@@ -47,8 +49,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <LogOut size={20} /> Keluar
           </button>
         </form>
-      </aside>
-      <main style={{ flex: 1, padding: '3rem', overflowY: 'auto', height: '100vh' }}>
+        </aside>
+      </MobileSidebarWrapper>
+      <main className="dashboard-main" style={{ flex: 1, padding: '3rem', overflowY: 'auto', height: '100vh' }}>
         {children}
       </main>
       <PushManager />
