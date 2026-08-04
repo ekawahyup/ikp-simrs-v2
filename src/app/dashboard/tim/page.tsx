@@ -12,6 +12,7 @@ interface User {
   unit: string;
   role: UserRole;
   password?: string;
+  telegramChatId?: string;
   index?: number;
 }
 
@@ -156,7 +157,8 @@ export default function TimPage() {
           email: row.Email || row.EMAIL || row.email,
           password: row.Password || row.PASSWORD || row.password,
           role: row.Role || row.ROLE || row.role,
-          unit: row.Unit || row.UNIT || row.unit
+          unit: row.Unit || row.UNIT || row.unit,
+          telegramChatId: row.TELEGRAM_CHAT_ID || row.Telegram_Chat_ID || row.telegram_chat_id || ''
         })));
       }
     } catch (e) {
@@ -228,7 +230,8 @@ export default function TimPage() {
       EMAIL: activeUser.email,
       PASSWORD: activeUser.password,
       ROLE: activeUser.role,
-      UNIT: activeUnits.join(', ')
+      UNIT: activeUnits.join(', '),
+      TELEGRAM_CHAT_ID: activeUser.telegramChatId || ""
     };
 
     try {
@@ -410,6 +413,14 @@ export default function TimPage() {
                   )}
                 </select>
               </div>
+
+              {activeUser.role !== 'PELAPOR' && (
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Telegram Chat ID (Opsional)</label>
+                  <input type="text" className="form-input" value={activeUser.telegramChatId || ''} onChange={e => setActiveUser({...activeUser, telegramChatId: e.target.value})} placeholder="Cth: 12345678" />
+                  <span style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))', marginTop: '4px' }}>Dapatkan ID dari @userinfobot di Telegram. Kosongkan jika tidak butuh notif Telegram.</span>
+                </div>
+              )}
 
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Unit Tugas (Bisa Pilih Lebih Dari Satu)</label>
