@@ -38,8 +38,8 @@ export default function PushManager() {
         if (Notification.permission === 'granted') {
           // If granted but no subscription, try to subscribe silently
           subscribe();
-        } else if (Notification.permission === 'default') {
-          // Ask user
+        } else {
+          // Ask user (covers default and denied, we will handle denied on click)
           setShowBanner(true);
         }
       }
@@ -91,15 +91,17 @@ export default function PushManager() {
   return (
     <div style={{
       position: 'fixed',
-      bottom: '2rem',
-      right: '2rem',
+      bottom: '1rem',
+      right: '1rem',
+      left: '1rem',
+      margin: '0 auto',
       background: 'hsl(var(--surface))',
       padding: '1.25rem',
       borderRadius: 'var(--radius-lg)',
       boxShadow: 'var(--shadow-xl)',
       border: '1px solid hsl(var(--border))',
       zIndex: 50,
-      maxWidth: '350px',
+      maxWidth: '400px',
       display: 'flex',
       flexDirection: 'column',
       gap: '1rem',
