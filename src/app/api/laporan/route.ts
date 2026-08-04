@@ -50,22 +50,27 @@ export async function POST(req: Request) {
     
     if (success) {
       try {
+        const users = await getAllAkses();
+        const targetEmails = new Set();
+        const targetTelegramIds = new Set();
+        
+        for (const u of users) {
+          const role = u.Role || u.ROLE || u.role;
+          const email = u.Email || u.EMAIL || u.email;
+          const units = (u.Unit || u.UNIT || u.unit || '').split(',').map((s: string)=>s.trim());
+          const telegramId = u.TELEGRAM_CHAT_ID || u.Telegram_Chat_ID || u.telegram_chat_id;
+          
+          if (role === 'KOMITE_MUTU' || role === 'ADMIN_IT') {
+            targetEmails.add(email);
+            if (telegramId) targetTelegramIds.add(telegramId);
+          } else if (role === 'VERIFIKATOR' && (units.includes(body.unitPelapor) || units.includes(body.lokasi))) {
+            targetEmails.add(email);
+            if (telegramId) targetTelegramIds.add(telegramId);
+          }
+        }
+
         const subscriptions = await getSubscriptions();
         if (subscriptions.length > 0) {
-          const users = await getAllAkses();
-          const targetEmails = new Set();
-          
-          for (const u of users) {
-            const role = u.Role || u.ROLE || u.role;
-            const email = u.Email || u.EMAIL || u.email;
-            const units = (u.Unit || u.UNIT || u.unit || '').split(',').map((s: string)=>s.trim());
-            
-            if (role === 'KOMITE_MUTU' || role === 'ADMIN_IT') {
-              targetEmails.add(email);
-            } else if (role === 'VERIFIKATOR' && (units.includes(body.unitPelapor) || units.includes(body.lokasi))) {
-              targetEmails.add(email);
-            }
-          }
 
           const payload = JSON.stringify({
             title: 'Insiden Keselamatan Pasien Baru',
@@ -82,8 +87,28 @@ export async function POST(req: Request) {
               }, payload).catch(e => console.error("Push Error", e));
             });
           
-          // Fire and forget, don't wait for all to finish if it takes too long
+          // Fire and forget web push
           Promise.allSettled(notifyPromises);
+        }
+
+        // Telegram Notifications
+        const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
+        if (telegramBotToken && targetTelegramIds.size > 0) {
+          const teleMessage = `🚨 *Insiden Baru Terlaporkan!* 🚨\n\n*Lokasi/Unit:* ${body.unitPelapor || 'Tidak diketahui'}\n*Waktu Insiden:* ${body.waktuInsiden || '-'}\n\nSilakan cek IKP Dashboard untuk detail lebih lanjut.`;
+          
+          const telegramPromises = Array.from(targetTelegramIds).map((chatId) => {
+            return fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                chat_id: chatId,
+                text: teleMessage,
+                parse_mode: 'Markdown'
+              })
+            }).catch(e => console.error("Telegram Push Error", e));
+          });
+          
+          Promise.allSettled(telegramPromises);
         }
       } catch (pushErr) {
         console.error("Failed to send push notifications", pushErr);
