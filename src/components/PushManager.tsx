@@ -19,15 +19,6 @@ export default function PushManager() {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [showBanner, setShowBanner] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    if ('serviceWorker' in navigator && 'PushManager' in window) {
-      setIsSupported(true);
-      checkSubscription();
-    }
-  }, []);
-
-  const checkSubscription = async () => {
     try {
       const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
       const subscription = await registration.pushManager.getSubscription();
@@ -85,6 +76,14 @@ export default function PushManager() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+      setIsSupported(true);
+      checkSubscription();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!isSupported || !showBanner || isSubscribed) return null;
 
