@@ -2,7 +2,7 @@
   "name": "IKP SIMRS Dashboard",
   "short_name": "IKP SIMRS",
   "description": "Medical-grade IKP Dashboard with Push Notifications",
-  "start_url": "/",
+  "start_url": "/?source=pwa",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0ea5e9",
