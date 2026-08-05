@@ -40,10 +40,9 @@ export default function LaporanPage() {
   };
 
   const filteredReports = reports.filter((r) => {
-    const matchSearch = 
-      (r.pasien || r.pasienName || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (r.noRm || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (r.namaPelapor || "").toLowerCase().includes(searchQuery.toLowerCase());
+    // Search across all variables by combining all values into a single string
+    const allValues = Object.values(r).join(" ").toLowerCase();
+    const matchSearch = allValues.includes(searchQuery.toLowerCase());
       
     const matchGrading = filterGrading ? r.grading === filterGrading : true;
     
@@ -68,11 +67,11 @@ export default function LaporanPage() {
       {showFilter && (
         <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '2rem', display: 'flex', gap: '1.5rem', alignItems: 'flex-end' }}>
           <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
-            <label className="form-label">Cari Nama / RM / Pelapor</label>
+            <label className="form-label">Cari Semua Variabel (Nama, Ruangan, Tanggal, dll)</label>
             <input 
               type="text" 
               className="form-input" 
-              placeholder="Ketik kata kunci..." 
+              placeholder="Ketik kata kunci apa saja..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
