@@ -19,7 +19,7 @@ export default function LaporanPage() {
         const json = await res.json();
         
         if (!json.fallback && json.data) {
-          mergedReports = [...json.data];
+          mergedReports = [...json.data].reverse();
         }
       } catch (e) {
         console.error(e);
