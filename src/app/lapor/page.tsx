@@ -365,23 +365,17 @@ export default function LaporInsidenPage() {
               ></textarea>
               
               <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'flex-end' }}>
-                <button 
-                  type="button" 
-                  onClick={analyzeWithAI} 
-                  disabled={isAnalyzing}
-                  className="btn hover-lift" 
-                  style={{ background: 'linear-gradient(135deg, #a855f7, #6366f1)', color: 'white', padding: '0.5rem 1rem', fontSize: '0.875rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
-                >
-                  {isAnalyzing ? "AI Sedang Menganalisis..." : <><Sparkles size={16} /> Analisis dengan Gemini AI</>}
+                <button type="button" onClick={analyzeWithAI} disabled={isAnalyzing || !kronologi.trim()} className="btn" style={{ background: 'hsl(var(--risk-purple))', color: 'white', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  {isAnalyzing ? "AI Sedang Menganalisis..." : <><Sparkles size={16} /> Analisis dengan Sistem AI</>}
                 </button>
               </div>
             </div>
 
             {aiInsights && (
-              <div style={{ padding: '1.5rem', background: 'linear-gradient(135deg, hsla(270, 95%, 60%, 0.1), hsla(230, 90%, 65%, 0.05))', borderRadius: 'var(--radius-md)', border: '1px solid hsla(270, 90%, 65%, 0.3)', marginBottom: '1rem' }}>
-                <h4 style={{ fontSize: '1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: 'hsl(var(--text-main))' }}>
-                  <BrainCircuit style={{ color: '#a855f7' }} /> Hasil Analisis Gemini AI
-                </h4>
+              <div style={{ background: 'hsla(var(--risk-purple), 0.05)', border: '1px solid hsla(var(--risk-purple), 0.2)', padding: '1.5rem', borderRadius: '12px', marginTop: '1rem' }}>
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'hsl(var(--text-main))', marginBottom: '1rem' }}>
+                  <BrainCircuit style={{ color: '#a855f7' }} /> Hasil Analisis Sistem AI
+                </h3>
                 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
                   <div>
