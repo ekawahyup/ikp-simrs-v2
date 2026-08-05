@@ -23,6 +23,8 @@ export async function POST(req: Request) {
       const kronologiLower = kronologi.toLowerCase();
       let kategori = "KPC (Kejadian Potensial Cedera)";
       let grading = "KUNING";
+      let probabilitas = 3;
+      let dampak = 2;
       let alasan = "Terdapat potensi cedera sedang jika tidak segera ditangani, namun belum mengenai pasien secara langsung.";
       let ringkasan = "Pelapor menemukan potensi bahaya berdasarkan kronologi yang disebutkan, yang memerlukan perbaikan sistem.";
       
@@ -30,16 +32,22 @@ export async function POST(req: Request) {
       if (kronologiLower.includes("meninggal") || kronologiLower.includes("mati") || kronologiLower.includes("fatal") || kronologiLower.includes("salah pemberian obat")) {
         kategori = "SENTINEL (Kejadian Sentinel)";
         grading = "MERAH";
+        probabilitas = 5;
+        dampak = 5;
         alasan = "Insiden ini mengakibatkan kematian atau cedera permanen yang sangat fatal pada pasien, memerlukan investigasi RCA segera.";
         ringkasan = "Terjadi insiden sangat fatal yang mengakibatkan hilangnya nyawa atau cedera berat pada pasien.";
       } else if (kronologiLower.includes("jatuh") || kronologiLower.includes("luka") || kronologiLower.includes("pendarahan")) {
         kategori = "KTD (Kejadian Tidak Diharapkan)";
         grading = "MERAH";
+        probabilitas = 4;
+        dampak = 4;
         alasan = "Insiden ini telah mengakibatkan cedera fisik pada pasien yang memerlukan penanganan medis lebih lanjut.";
         ringkasan = "Pasien mengalami cedera fisik akibat insiden yang terjadi di area perawatan.";
       } else if (kronologiLower.includes("hampir") || kronologiLower.includes("nyaris") || kronologiLower.includes("segera disadari")) {
         kategori = "KNC (Kejadian Nyaris Cedera)";
         grading = "BIRU";
+        probabilitas = 2;
+        dampak = 2;
         alasan = "Insiden hampir terjadi dan berpotensi mencederai pasien, namun berhasil dicegah sebelum mengenai pasien.";
         ringkasan = "Potensi insiden berhasil dicegah oleh petugas sebelum mencapai pasien.";
       }
@@ -47,6 +55,8 @@ export async function POST(req: Request) {
       return NextResponse.json({
         kategori: kategori,
         grading: grading,
+        probabilitas: probabilitas,
+        dampak: dampak,
         alasan_grading: alasan,
         ringkasan: ringkasan,
         whys: [
@@ -71,6 +81,8 @@ export async function POST(req: Request) {
       {
         "kategori": "Pilih salah satu: KPC / KNC / KTC / KTD / SENTINEL",
         "grading": "Pilih warna pita risiko: BIRU / HIJAU / KUNING / MERAH",
+        "probabilitas": 3, // Nilai integer 1-5 berdasarkan kemungkinan terjadi berulang
+        "dampak": 3, // Nilai integer 1-5 berdasarkan tingkat keparahan pada pasien
         "alasan_grading": "Jelaskan secara medis/logis 1 kalimat mengapa Anda memilih warna tersebut",
         "ringkasan": "Rangkuman kronologi dalam 1 kalimat padat untuk dasbor eksekutif",
         "whys": ["Pertanyaan Why 1", "Pertanyaan Why 2", "Pertanyaan Why 3"]

@@ -15,6 +15,7 @@ export default function LaporanDetailPage() {
   const [impact, setImpact] = useState<number>(1);
   const [saved, setSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isAnalyzingAI, setIsAnalyzingAI] = useState(false);
   const [reportStatus, setReportStatus] = useState<string>("Laporan Baru");
 
   useEffect(() => {
@@ -76,6 +77,34 @@ export default function LaporanDetailPage() {
       alert("Terjadi kesalahan saat menyimpan.");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleAIGrading = async () => {
+    if (!report || !report.kronologi) {
+      alert("Kronologi laporan tidak tersedia untuk dianalisis.");
+      return;
+    }
+    setIsAnalyzingAI(true);
+    try {
+      const res = await fetch("/api/gemini", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kronologi: report.kronologi })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal menganalisis");
+      
+      if (data.probabilitas && data.dampak) {
+        setProb(data.probabilitas);
+        setImpact(data.dampak);
+      } else {
+        alert("AI gagal memberikan nilai Probabilitas dan Dampak secara akurat. Silakan isi manual.");
+      }
+    } catch (err: any) {
+      alert("Gagal menganalisis dengan AI: " + err.message);
+    } finally {
+      setIsAnalyzingAI(false);
     }
   };
 
@@ -142,9 +171,19 @@ export default function LaporanDetailPage() {
 
         {/* Right Column: Matriks Grading Risiko */}
         <div className="glass-panel" style={{ padding: '2rem', height: 'fit-content', position: 'sticky', top: '2rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
-            <ShieldAlert size={20} style={{ color: 'hsl(var(--primary))' }} />
-            <h3 style={{ fontSize: '1.125rem', fontWeight: 700 }}>Grading Risiko</h3>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <ShieldAlert size={20} style={{ color: 'hsl(var(--primary))' }} />
+              <h3 style={{ fontSize: '1.125rem', fontWeight: 700 }}>Grading Risiko</h3>
+            </div>
+            <button 
+              onClick={handleAIGrading} 
+              disabled={isAnalyzingAI}
+              className="btn hover-lift" 
+              style={{ background: 'hsla(var(--risk-purple), 0.1)', color: 'hsl(var(--risk-purple))', border: '1px solid hsla(var(--risk-purple), 0.3)', padding: '0.25rem 0.75rem', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+            >
+              <span style={{ fontSize: '1rem' }}>✨</span> {isAnalyzingAI ? 'Menganalisis...' : 'Prediksi AI'}
+            </button>
           </div>
           
           <p style={{ fontSize: '0.875rem', color: 'hsl(var(--text-muted))', marginBottom: '1.5rem' }}>Tentukan level risiko berdasarkan Dampak dan Probabilitas.</p>
