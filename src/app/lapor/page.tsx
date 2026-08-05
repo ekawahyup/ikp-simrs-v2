@@ -57,6 +57,7 @@ const FALLBACK_UNIT = [
 export default function LaporInsidenPage() {
   const [rm, setRm] = useState("");
   const [patientData, setPatientData] = useState<any>(null);
+  const [patientOptions, setPatientOptions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -103,7 +104,7 @@ export default function LaporInsidenPage() {
     if (!rm) return;
     setLoading(true);
     setError("");
-    setPatientData(null);
+    setPatientOptions([]);
     try {
       // Bridging via Vercel Proxy untuk menghindari error CORS (Duplicate Access-Control-Allow-Origin)
       const res = await fetch(`/api/simrs?rm=${rm}`);
@@ -113,9 +114,21 @@ export default function LaporInsidenPage() {
         throw new Error(data.error || "Gagal mengambil data dari SIMRS");
       }
       
-      setPatientData(data);
-      setManualNama(data.name);
-      setManualRuangan(`${data.room} - ${data.bed || '-'}`);
+      if (Array.isArray(data) && data.length > 0) {
+        if (data.length === 1) {
+          setPatientData(data[0]);
+          setPatientOptions([]);
+          setManualNama(data[0].name);
+          setManualRuangan(`${data[0].room} - ${data[0].bed || '-'}`);
+        } else {
+          setPatientOptions(data);
+          setPatientData(data[0]); // Default to first
+          setManualNama(data[0].name);
+          setManualRuangan(`${data[0].room} - ${data[0].bed || '-'}`);
+        }
+      } else {
+        throw new Error("Format data SIMRS tidak sesuai");
+      }
     } catch (err: any) {
       setError(err.message || "Gagal menghubungi SIMRS");
     } finally {
@@ -297,6 +310,24 @@ export default function LaporInsidenPage() {
                 <input type="text" className="form-input" value={manualRuangan} onChange={e => setManualRuangan(e.target.value)} placeholder="Cth: Melati 3 - Bed 2" required />
               </div>
             </div>
+
+            {patientOptions.length > 1 && (
+              <div className="form-group" style={{ marginBottom: '1.5rem', background: 'hsla(var(--risk-yellow), 0.1)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid hsla(var(--risk-yellow), 0.3)' }}>
+                <label className="form-label" style={{ color: 'hsl(var(--risk-yellow))', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <ShieldAlert size={16} /> Ditemukan {patientOptions.length} Riwayat Kunjungan. Pilih Ruangan:
+                </label>
+                <select className="form-select" onChange={(e) => {
+                  const selected = patientOptions[Number(e.target.value)];
+                  setPatientData(selected);
+                  setManualNama(selected.name);
+                  setManualRuangan(`${selected.room} - ${selected.bed || '-'}`);
+                }}>
+                  {patientOptions.map((opt, i) => (
+                    <option key={i} value={i}>{opt.room} - {opt.bed || '-'} (Tgl Masuk: {opt.tglRegistrasi})</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {patientData && (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', padding: '1rem', background: 'hsl(var(--bg-body))', borderRadius: 'var(--radius-md)', border: '1px solid hsl(var(--border))' }}>

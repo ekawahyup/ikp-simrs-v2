@@ -26,32 +26,33 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: json.message || "Data pasien tidak ditemukan di SIMRS" }, { status: 404 });
     }
 
-    const patient = json.data[0];
-    
-    // Hitung Umur dari tanggal_lahir
-    let age = 0;
-    if (patient.tanggal_lahir) {
-      const birthDate = new Date(patient.tanggal_lahir);
-      const today = new Date();
-      age = today.getFullYear() - birthDate.getFullYear();
-      const m = today.getMonth() - birthDate.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-          age--;
+    const patients = json.data.map((patient: any) => {
+      let age = 0;
+      if (patient.tanggal_lahir) {
+        const birthDate = new Date(patient.tanggal_lahir);
+        const today = new Date();
+        age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
       }
-    }
 
-    // Kembalikan data yang sudah di-format agar Client tidak perlu mem-parsing rumit
-    return NextResponse.json({
-      name: patient.nama,
-      gender: patient.jenis_kelamin,
-      age: age,
-      room: patient.nama_ruangan,
-      bed: patient.no_bed,
-      department: patient.nama_departement,
-      tglRegistrasi: patient.tglregistrasi,
-      noRegistrasi: patient.no_registrasi,
-      tanggalLahir: patient.tanggal_lahir
+      return {
+        name: patient.nama,
+        gender: patient.jenis_kelamin,
+        age: age,
+        room: patient.nama_ruangan,
+        bed: patient.no_bed,
+        department: patient.nama_departement,
+        tglRegistrasi: patient.tglregistrasi,
+        noRegistrasi: patient.no_registrasi,
+        tanggalLahir: patient.tanggal_lahir
+      };
     });
+
+    // Kembalikan data yang sudah di-format dalam bentuk array agar Client bisa memilih
+    return NextResponse.json(patients);
     
   } catch (err: any) {
     console.error("SIMRS Proxy Error:", err);
