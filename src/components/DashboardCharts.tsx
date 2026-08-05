@@ -5,7 +5,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
   PieChart, Pie, Cell
 } from 'recharts';
-import { AlertTriangle, ShieldAlert } from 'lucide-react';
+import { AlertTriangle, ShieldAlert, FileSearch } from 'lucide-react';
 
 interface Report {
   id: string;
@@ -92,6 +92,36 @@ export default function DashboardCharts({ reports }: Props) {
       map[jenis] = (map[jenis] || 0) + 1;
     });
     return Object.keys(map).map(k => ({ name: k, value: map[k] })).sort((a, b) => b.value - a.value);
+  }, [reports]);
+
+  // 5. Keyword Heatmap (Word Cloud) dari Kronologi
+  const keywordData = useMemo(() => {
+    const stopWords = ['yang', 'di', 'ke', 'dari', 'dan', 'dengan', 'untuk', 'pada', 'ini', 'itu', 'pasien', 'ruangan', 'karena', 'tidak', 'ada', 'sudah', 'belum', 'saat', 'dalam', 'terjadi', 'mengalami', 'oleh', 'setelah', 'lalu', 'kemudian', 'perawat', 'dokter', 'petugas', 'bed', 'kamar', 'jam', 'pukul', 'atau', 'serta', 'segera', 'langsung'];
+    const wordMap: Record<string, number> = {};
+    
+    reports.forEach(r => {
+      if (!r.kronologi) return;
+      const words = r.kronologi.toLowerCase().split(/\W+/);
+      words.forEach(w => {
+        if (w.length > 3 && !stopWords.includes(w)) {
+          wordMap[w] = (wordMap[w] || 0) + 1;
+        }
+      });
+    });
+
+    const sortedWords = Object.keys(wordMap)
+      .map(w => ({ word: w, count: wordMap[w] }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 30); // Ambil Top 30 kata
+
+    const maxCount = sortedWords.length > 0 ? sortedWords[0].count : 1;
+    return sortedWords.map(w => ({
+      ...w,
+      // Hitung persentase intensitas (0.2 - 1.0) untuk warna
+      intensity: Math.max(0.2, w.count / maxCount),
+      // Hitung ukuran font (0.8rem - 2rem)
+      fontSize: 0.8 + (w.count / maxCount) * 1.5
+    }));
   }, [reports]);
 
   return (
@@ -189,6 +219,44 @@ export default function DashboardCharts({ reports }: Props) {
               <RechartsTooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
             </PieChart>
           </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Chart 5: Heatmap Kata Kunci (Perhatian Direksi) */}
+      <div className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gridColumn: '1 / -1' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'hsl(var(--risk-red))', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <FileSearch size={22} /> Tren Kata Kunci Kronologi (Perlu Perhatian Direksi)
+          </h3>
+          <span style={{ fontSize: '0.875rem', color: 'hsl(var(--text-muted))', padding: '0.5rem 1rem', background: 'hsl(var(--bg-body))', borderRadius: '9999px', border: '1px solid hsl(var(--border))' }}>
+            Berdasarkan Frekuensi Kemunculan
+          </span>
+        </div>
+        
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center', padding: '2rem', background: 'linear-gradient(135deg, hsla(var(--risk-red), 0.05), transparent)', borderRadius: 'var(--radius-lg)', border: '1px dashed hsla(var(--risk-red), 0.3)', minHeight: '200px', alignItems: 'center' }}>
+          {keywordData.length === 0 ? (
+            <p style={{ color: 'hsl(var(--text-muted))', fontStyle: 'italic' }}>Belum ada data kronologi yang cukup untuk dianalisis.</p>
+          ) : (
+            keywordData.map((kw, i) => (
+              <div 
+                key={i} 
+                style={{ 
+                  fontSize: `${kw.fontSize}rem`, 
+                  fontWeight: kw.intensity > 0.7 ? 800 : kw.intensity > 0.4 ? 600 : 400,
+                  color: `hsla(350, 80%, 40%, ${kw.intensity + 0.3})`, // Red heatmap
+                  padding: '0.25rem 0.5rem',
+                  lineHeight: 1,
+                  textTransform: 'capitalize',
+                  cursor: 'default',
+                  transition: 'transform 0.2s'
+                }}
+                title={`Muncul ${kw.count} kali dalam laporan`}
+                className="heatmap-word"
+              >
+                {kw.word}
+              </div>
+            ))
+          )}
         </div>
       </div>
 
