@@ -3,6 +3,9 @@ import { addLaporanRow, getAllLaporan, getSubscriptions, getAllAkses } from '@/l
 import { auth } from '@/auth';
 import webpush from 'web-push';
 
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(
     process.env.VAPID_SUBJECT || 'mailto:admin@rsdgunungjati.id',
