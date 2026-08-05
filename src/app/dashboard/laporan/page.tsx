@@ -13,6 +13,7 @@ export default function LaporanPage() {
   const [showFilter, setShowFilter] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterGrading, setFilterGrading] = useState("");
+  const [verifikatorMap, setVerifikatorMap] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -23,6 +24,19 @@ export default function LaporanPage() {
         
         if (!json.fallback && json.data) {
           mergedReports = [...json.data].reverse();
+        }
+
+        const resAkses = await fetch('/api/master/akses');
+        const jsonAkses = await resAkses.json();
+        if (jsonAkses.data) {
+           const verifikators = jsonAkses.data
+             .map((r: any) => ({
+                name: r.Nama || r.NAMA || r.nama,
+                role: r.Role || r.ROLE || r.role,
+                units: (r.Unit || r.UNIT || r.unit || "").split(',').map((u:string) => u.trim().toLowerCase())
+             }))
+             .filter((u: any) => u.role === "VERIFIKATOR");
+           setVerifikatorMap(verifikators);
         }
       } catch (e) {
         console.error(e);
@@ -40,6 +54,19 @@ export default function LaporanPage() {
     if (grading === "BIRU") return "badge-biru";
     if (grading === "HIJAU") return "badge-hijau";
     return "";
+  };
+
+  const getVerifikatorsForReport = (report: any) => {
+    const loc1 = (report.ruanganPasien || "").toLowerCase();
+    const loc2 = (report.unitPelapor || "").toLowerCase();
+    const loc3 = (report.lokasi || "").toLowerCase();
+    
+    const names = verifikatorMap
+      .filter(v => v.units.includes(loc1) || v.units.includes(loc2) || v.units.includes(loc3))
+      .map(v => v.name);
+      
+    if (names.length === 0) return "-";
+    return names.join(", ");
   };
 
   const filteredReports = reports.filter((r) => {
@@ -66,6 +93,7 @@ export default function LaporanPage() {
       "Lokasi Kejadian": r.lokasi,
       "Jenis Insiden": r.jenis,
       "Grading Risiko": r.grading,
+      "Verifikator": getVerifikatorsForReport(r),
       "Status": r.status,
       "Kronologi": r.kronologi
     })));
@@ -82,13 +110,14 @@ export default function LaporanPage() {
     doc.setFontSize(10);
     doc.text(`Dicetak pada: ${new Date().toLocaleString('id-ID')}`, 14, 22);
 
-    const tableColumn = ["Tanggal", "Pelapor & Unit", "Pasien & Ruang", "Jenis", "Grading", "Status"];
+    const tableColumn = ["Tanggal", "Pelapor & Unit", "Pasien & Ruang", "Jenis", "Grading", "Verifikator", "Status"];
     const tableRows = filteredReports.map(r => [
       r.tanggal,
       `${r.namaPelapor || 'Anonim'}\n${r.unitPelapor || '-'}`,
       `${r.pasien || r.pasienName}\n${r.noRm || '-'} - ${r.ruanganPasien || '-'}`,
       r.jenis,
       r.grading,
+      getVerifikatorsForReport(r),
       r.status
     ]);
 
@@ -159,13 +188,14 @@ export default function LaporanPage() {
               <th style={{ padding: '1rem', fontSize: '0.875rem', color: 'hsl(var(--text-muted))', fontWeight: 600 }}>PASIEN & RUANG</th>
               <th style={{ padding: '1rem', fontSize: '0.875rem', color: 'hsl(var(--text-muted))', fontWeight: 600 }}>JENIS</th>
               <th style={{ padding: '1rem', fontSize: '0.875rem', color: 'hsl(var(--text-muted))', fontWeight: 600 }}>GRADING (PITA)</th>
+              <th style={{ padding: '1rem', fontSize: '0.875rem', color: 'hsl(var(--text-muted))', fontWeight: 600 }}>VERIFIKATOR</th>
               <th style={{ padding: '1rem', fontSize: '0.875rem', color: 'hsl(var(--text-muted))', fontWeight: 600 }}>STATUS</th>
             </tr>
           </thead>
           <tbody>
             {filteredReports.length === 0 ? (
               <tr>
-                <td colSpan={6} style={{ padding: '3rem', textAlign: 'center', color: 'hsl(var(--text-muted))' }}>
+                <td colSpan={7} style={{ padding: '3rem', textAlign: 'center', color: 'hsl(var(--text-muted))' }}>
                   Tidak ada laporan yang sesuai dengan filter.
                 </td>
               </tr>
@@ -192,6 +222,9 @@ export default function LaporanPage() {
                         {report.grading.toLowerCase()}
                       </span>
                     )}
+                  </td>
+                  <td style={{ padding: '1rem', fontSize: '0.875rem', color: 'hsl(var(--text-muted))' }}>
+                    {getVerifikatorsForReport(report)}
                   </td>
                   <td style={{ padding: '1rem', fontSize: '0.875rem' }}>
                     {report.status === "Laporan Baru" ? (
