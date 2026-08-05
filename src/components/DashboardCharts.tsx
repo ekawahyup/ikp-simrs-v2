@@ -43,10 +43,10 @@ export default function DashboardCharts({ reports }: Props) {
   const ruanganData = useMemo(() => {
     const map: Record<string, number> = {};
     reports.forEach(r => {
-      // Prioritize lokasi, fallback to ruanganPasien, then unitPelapor
-      let loc = r.lokasi;
+      // Prioritize unitPelapor (dropdown) for cleaner chart grouping, fallback to ruanganPasien or lokasi
+      let loc = r.unitPelapor;
       if (!loc || loc === '-' || loc === 'Tidak diketahui') loc = r.ruanganPasien;
-      if (!loc || loc === '-' || loc === 'Tidak diketahui') loc = r.unitPelapor;
+      if (!loc || loc === '-' || loc === 'Tidak diketahui') loc = r.lokasi;
       if (!loc || loc === '-') loc = 'Lainnya';
       
       map[loc] = (map[loc] || 0) + 1;
