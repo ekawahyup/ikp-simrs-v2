@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Filter } from "lucide-react";
+import { Filter, Download, FileSpreadsheet, FileText } from "lucide-react";
 import { useRouter } from "next/navigation";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export default function LaporanPage() {
   const router = useRouter();
@@ -49,17 +52,74 @@ export default function LaporanPage() {
     return matchSearch && matchGrading;
   });
 
+  const exportToExcel = () => {
+    if (filteredReports.length === 0) return alert("Tidak ada data untuk diekspor");
+    const worksheet = XLSX.utils.json_to_sheet(filteredReports.map(r => ({
+      "ID": r.id,
+      "Tanggal Laporan": r.tanggal,
+      "Waktu Insiden": r.waktuInsiden,
+      "Nama Pelapor": r.namaPelapor,
+      "Unit Pelapor": r.unitPelapor,
+      "No RM": r.noRm,
+      "Nama Pasien": r.pasien || r.pasienName,
+      "Ruangan Pasien": r.ruanganPasien,
+      "Lokasi Kejadian": r.lokasi,
+      "Jenis Insiden": r.jenis,
+      "Grading Risiko": r.grading,
+      "Status": r.status,
+      "Kronologi": r.kronologi
+    })));
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Data_IKP");
+    XLSX.writeFile(workbook, `Data_Laporan_IKP_${new Date().getTime()}.xlsx`);
+  };
+
+  const exportToPDF = () => {
+    if (filteredReports.length === 0) return alert("Tidak ada data untuk diekspor");
+    const doc = new jsPDF('landscape');
+    
+    doc.text("Laporan Insiden Keselamatan Pasien (IKP)", 14, 15);
+    doc.setFontSize(10);
+    doc.text(`Dicetak pada: ${new Date().toLocaleString('id-ID')}`, 14, 22);
+
+    const tableColumn = ["Tanggal", "Pelapor & Unit", "Pasien & Ruang", "Jenis", "Grading", "Status"];
+    const tableRows = filteredReports.map(r => [
+      r.tanggal,
+      `${r.namaPelapor || 'Anonim'}\n${r.unitPelapor || '-'}`,
+      `${r.pasien || r.pasienName}\n${r.noRm || '-'} - ${r.ruanganPasien || '-'}`,
+      r.jenis,
+      r.grading,
+      r.status
+    ]);
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 30,
+      styles: { fontSize: 8, cellPadding: 3 },
+      headStyles: { fillColor: [41, 128, 185] },
+    });
+
+    doc.save(`Data_Laporan_IKP_${new Date().getTime()}.pdf`);
+  };
+
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'hsl(var(--text-main))' }}>Daftar Laporan Masuk</h1>
-        <div style={{ display: 'flex', gap: '1rem' }}>
+        <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <button onClick={exportToExcel} className="btn btn-outline hover-lift" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', borderColor: 'hsl(var(--risk-green))', color: 'hsl(var(--risk-green))' }}>
+            <FileSpreadsheet size={16}/> Excel
+          </button>
+          <button onClick={exportToPDF} className="btn btn-outline hover-lift" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', borderColor: 'hsl(var(--risk-red))', color: 'hsl(var(--risk-red))' }}>
+            <FileText size={16}/> PDF
+          </button>
           <button 
             onClick={() => setShowFilter(!showFilter)} 
-            className="btn btn-outline hover-lift" 
-            style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', background: showFilter ? 'hsla(var(--primary), 0.1)' : '' }}
+            className="btn btn-primary hover-lift" 
+            style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', background: showFilter ? 'hsl(var(--primary-dark))' : '' }}
           >
-            <Filter size={16}/> Filter & Cari
+            <Filter size={16}/> Filter
           </button>
         </div>
       </div>
