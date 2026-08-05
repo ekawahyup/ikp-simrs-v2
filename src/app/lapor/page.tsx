@@ -365,7 +365,13 @@ export default function LaporInsidenPage() {
               ></textarea>
               
               <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'flex-end' }}>
-                <button type="button" onClick={analyzeWithAI} disabled={isAnalyzing || !kronologi.trim()} className="btn" style={{ background: 'hsl(var(--risk-purple))', color: 'white', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <button 
+                  type="button" 
+                  onClick={analyzeWithAI} 
+                  disabled={isAnalyzing || !kronologi.trim()}
+                  className="btn hover-lift" 
+                  style={{ background: 'linear-gradient(135deg, #a855f7, #6366f1)', color: 'white', padding: '0.5rem 1rem', fontSize: '0.875rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+                >
                   {isAnalyzing ? "AI Sedang Menganalisis..." : <><Sparkles size={16} /> Analisis dengan Sistem AI</>}
                 </button>
               </div>
