@@ -3,6 +3,9 @@ import { ShieldCheck, Calendar, Activity, CheckCircle, BarChart3 } from "lucide-
 import { getAllLaporan } from "@/lib/googleSheets";
 import DashboardCharts from "@/components/DashboardCharts";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function DashboardPage() {
   const session = await auth();
   
