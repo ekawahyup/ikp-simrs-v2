@@ -102,12 +102,41 @@ export default function LaporInsidenPage() {
     setError("");
     setPatientData(null);
     try {
-      const res = await fetch(`/api/simrs?rm=${rm}`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Gagal mengambil data");
-      setPatientData(data);
+      // Bridging langsung ke API Eksternal RS via Client-Side untuk menghindari blokir Vercel
+      const res = await fetch(`https://rsdgunungjati.com/service/external/get-pasien-by-nocm?nocm=${rm}`);
+      const json = await res.json();
+      
+      if (json.status !== 200 || !json.data || json.data.length === 0) {
+        throw new Error(json.message || "Data pasien tidak ditemukan di SIMRS");
+      }
+      
+      const patient = json.data[0];
+      
+      // Hitung Umur dari tanggal_lahir
+      let age = 0;
+      if (patient.tanggal_lahir) {
+        const birthDate = new Date(patient.tanggal_lahir);
+        const today = new Date();
+        age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+      }
+
+      setPatientData({
+        name: patient.nama,
+        gender: patient.jenis_kelamin,
+        age: age,
+        room: patient.nama_ruangan,
+        bed: patient.no_bed,
+        department: patient.nama_departement,
+        tglRegistrasi: patient.tglregistrasi,
+        noRegistrasi: patient.no_registrasi,
+        tanggalLahir: patient.tanggal_lahir
+      });
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || "Gagal menghubungi SIMRS");
     } finally {
       setLoading(false);
     }
@@ -150,7 +179,7 @@ export default function LaporInsidenPage() {
       namaPelapor: isAnonymous ? "Anonim" : namaPelapor,
       unitPelapor: unitPelapor,
       pasienName: patientData ? patientData.name : "Pasien Belum Dicari",
-      rmRoom: patientData ? `${rm} - ${patientData.room}` : `${rm} - ${unitPelapor}`,
+      rmRoom: patientData ? `${rm} - ${patientData.room} (Bed: ${patientData.bed || '-'})` : `${rm} - ${unitPelapor}`,
       waktuInsiden: waktuRaw,
       lokasi: formData.get("lokasi") as string,
       jenis: formData.get("jenis") as string,
@@ -283,12 +312,20 @@ export default function LaporInsidenPage() {
                   <strong style={{ display: 'block', fontSize: '0.875rem' }}>{patientData.name} ({patientData.gender})</strong>
                 </div>
                 <div>
-                  <span style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))' }}>Umur</span>
-                  <strong style={{ display: 'block', fontSize: '0.875rem' }}>{patientData.age} Tahun</strong>
+                  <span style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))' }}>Umur / Tgl Lahir</span>
+                  <strong style={{ display: 'block', fontSize: '0.875rem' }}>{patientData.age} Tahun ({patientData.tanggalLahir})</strong>
+                </div>
+                <div>
+                  <span style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))' }}>Ruangan / Bed</span>
+                  <strong style={{ display: 'block', fontSize: '0.875rem' }}>{patientData.room} - {patientData.bed || '-'}</strong>
+                </div>
+                <div>
+                  <span style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))' }}>Departemen</span>
+                  <strong style={{ display: 'block', fontSize: '0.875rem' }}>{patientData.department || '-'}</strong>
                 </div>
                 <div style={{ gridColumn: 'span 2' }}>
-                  <span style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))' }}>Ruangan / Bangsal</span>
-                  <strong style={{ display: 'block', fontSize: '0.875rem' }}>{patientData.room}</strong>
+                  <span style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))' }}>No Registrasi & Tanggal Masuk</span>
+                  <strong style={{ display: 'block', fontSize: '0.875rem' }}>{patientData.noRegistrasi || '-'} | {patientData.tglRegistrasi || '-'}</strong>
                 </div>
               </div>
             )}
