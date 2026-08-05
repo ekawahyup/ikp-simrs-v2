@@ -15,6 +15,7 @@ export default function LaporanDetailPage() {
   const [impact, setImpact] = useState<number>(1);
   const [saved, setSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [reportStatus, setReportStatus] = useState<string>("Laporan Baru");
 
   useEffect(() => {
     const fetchReport = async () => {
@@ -24,6 +25,9 @@ export default function LaporanDetailPage() {
         if (json.data) {
           const found = json.data.find((r: any) => String(r.id) === String(params.id));
           setReport(found || null);
+          if (found && found.status) {
+            setReportStatus(found.status);
+          }
         }
       } catch (e) {
         console.error(e);
@@ -48,15 +52,7 @@ export default function LaporanDetailPage() {
     if (!report) return;
     setIsSaving(true);
     
-    // Tentukan status investigasi berdasarkan warna pita
-    let status = "Investigasi Sederhana (Maks 1 Minggu)";
-    if (riskResult === 'MERAH' || riskResult === 'KUNING') {
-      status = "Investigasi RCA (Maks 45 Hari)";
-    }
-    if (riskResult === 'BIRU') {
-      status = "Investigasi Sederhana (Maks 2 Minggu)";
-    }
-
+    // Status kini diambil langsung dari pilihan dropdown (reportStatus)
     try {
       const res = await fetch('/api/laporan', {
         method: 'PUT',
@@ -64,14 +60,14 @@ export default function LaporanDetailPage() {
         body: JSON.stringify({
           id: params.id,
           grading: riskResult,
-          status: status
+          status: reportStatus
         })
       });
       
       if (res.ok) {
         setSaved(true);
         // Perbarui state lokal agar tampilan sinkron
-        setReport({ ...report, grading: riskResult, status: status });
+        setReport({ ...report, grading: riskResult, status: reportStatus });
         setTimeout(() => setSaved(false), 3000);
       } else {
         alert("Gagal menyimpan grading. Coba lagi.");
@@ -177,6 +173,18 @@ export default function LaporanDetailPage() {
             <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'hsl(var(--text-muted))', textTransform: 'uppercase' }}>Hasil Kalkulasi Matriks</span>
             <div style={{ fontSize: '2.5rem', fontWeight: 800, color: `hsl(${getBadgeColor(riskResult)})`, lineHeight: 1.2, margin: '0.5rem 0' }}>{riskResult}</div>
             <div style={{ fontSize: '0.875rem', color: 'hsl(var(--text-muted))' }}>Skor Risiko: <strong>{score}</strong></div>
+          </div>
+
+          <div className="form-group" style={{ marginTop: '1.5rem' }}>
+            <label className="form-label">Status Tindak Lanjut</label>
+            <select className="form-select" value={reportStatus} onChange={(e) => setReportStatus(e.target.value)}>
+              <option value="Laporan Baru">Laporan Baru</option>
+              <option value="Investigasi Sederhana (Maks 1 Minggu)">Investigasi Sederhana (Maks 1 Minggu)</option>
+              <option value="Investigasi Sederhana (Maks 2 Minggu)">Investigasi Sederhana (Maks 2 Minggu)</option>
+              <option value="Investigasi RCA (Maks 45 Hari)">Investigasi RCA (Maks 45 Hari)</option>
+              <option value="Selesai / Ditutup">✅ Selesai / Ditutup</option>
+            </select>
+            <span style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))', marginTop: '4px' }}>Perbarui status investigasi laporan ini.</span>
           </div>
 
           <button onClick={handleSaveGrading} disabled={isSaving || !report} className="btn btn-primary hover-lift" style={{ width: '100%', marginTop: '1.5rem', padding: '1rem' }}>
