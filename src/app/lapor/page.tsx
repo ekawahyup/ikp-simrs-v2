@@ -102,39 +102,15 @@ export default function LaporInsidenPage() {
     setError("");
     setPatientData(null);
     try {
-      // Bridging langsung ke API Eksternal RS via Client-Side untuk menghindari blokir Vercel
-      const res = await fetch(`https://rsdgunungjati.com/service/external/get-pasien-by-nocm?nocm=${rm}`);
-      const json = await res.json();
+      // Bridging via Vercel Proxy untuk menghindari error CORS (Duplicate Access-Control-Allow-Origin)
+      const res = await fetch(`/api/simrs?rm=${rm}`);
+      const data = await res.json();
       
-      if (json.status !== 200 || !json.data || json.data.length === 0) {
-        throw new Error(json.message || "Data pasien tidak ditemukan di SIMRS");
+      if (!res.ok) {
+        throw new Error(data.error || "Gagal mengambil data dari SIMRS");
       }
       
-      const patient = json.data[0];
-      
-      // Hitung Umur dari tanggal_lahir
-      let age = 0;
-      if (patient.tanggal_lahir) {
-        const birthDate = new Date(patient.tanggal_lahir);
-        const today = new Date();
-        age = today.getFullYear() - birthDate.getFullYear();
-        const m = today.getMonth() - birthDate.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-            age--;
-        }
-      }
-
-      setPatientData({
-        name: patient.nama,
-        gender: patient.jenis_kelamin,
-        age: age,
-        room: patient.nama_ruangan,
-        bed: patient.no_bed,
-        department: patient.nama_departement,
-        tglRegistrasi: patient.tglregistrasi,
-        noRegistrasi: patient.no_registrasi,
-        tanggalLahir: patient.tanggal_lahir
-      });
+      setPatientData(data);
     } catch (err: any) {
       setError(err.message || "Gagal menghubungi SIMRS");
     } finally {
