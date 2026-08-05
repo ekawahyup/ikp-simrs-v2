@@ -4,15 +4,9 @@ import { useState, useEffect } from "react";
 import { Filter } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-const DUMMY_REPORTS = [
-  { id: "123", tanggal: "02 Ags 2026", pasien: "Siti Aminah", noRm: "RM987654", ruanganPasien: "ICU", jenis: "KTD", grading: "MERAH", status: "Investigasi RCA" },
-  { id: "124", tanggal: "01 Ags 2026", pasien: "Budi Santoso", noRm: "RM123456", ruanganPasien: "Melati 3", jenis: "KNC", grading: "KUNING", status: "Investigasi Sederhana" },
-  { id: "125", tanggal: "30 Jul 2026", pasien: "Joko Anwar", noRm: "RM456789", ruanganPasien: "Mawar 1", jenis: "KPC", grading: "BIRU", status: "Selesai / Ditutup" },
-];
-
 export default function LaporanPage() {
   const router = useRouter();
-  const [reports, setReports] = useState<any[]>(DUMMY_REPORTS);
+  const [reports, setReports] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
