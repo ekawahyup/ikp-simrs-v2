@@ -36,7 +36,7 @@ export async function addLaporanRow(data: any) {
   try {
     await sheet.loadHeaderRow();
   } catch (e) {
-    await sheet.setHeaderRow(['ID', 'Tanggal', 'Nama Pelapor', 'Unit Pelapor', 'Nama Pasien', 'RM & Ruang', 'Waktu Insiden', 'Lokasi', 'Jenis', 'Kronologi', 'Grading AI', 'Status']);
+    await sheet.setHeaderRow(['ID', 'Tanggal', 'Nama Pelapor', 'Unit Pelapor', 'No RM', 'Nama Pasien', 'Ruangan Pasien', 'Waktu Insiden', 'Lokasi', 'Jenis', 'Kronologi', 'Grading AI', 'Status']);
   }
 
   await sheet.addRow({
@@ -44,8 +44,9 @@ export async function addLaporanRow(data: any) {
     'Tanggal': data.tanggal,
     'Nama Pelapor': data.namaPelapor || 'Anonim',
     'Unit Pelapor': data.unitPelapor || '-',
+    'No RM': data.noRm || '-',
     'Nama Pasien': data.pasienName || 'Tidak Disebutkan',
-    'RM & Ruang': data.rmRoom || '-',
+    'Ruangan Pasien': data.ruanganPasien || '-',
     'Waktu Insiden': data.waktuInsiden || '-',
     'Lokasi': data.lokasi || '-',
     'Jenis': data.jenis || '-',
@@ -70,8 +71,9 @@ export async function getAllLaporan() {
     tanggal: row.get('Tanggal'),
     namaPelapor: row.get('Nama Pelapor'),
     unitPelapor: row.get('Unit Pelapor'),
+    noRm: row.get('No RM') || row.get('RM & Ruang')?.split('-')[0]?.trim() || '-', // Fallback to old format if 'No RM' is empty
     pasien: row.get('Nama Pasien'),
-    rmRoom: row.get('RM & Ruang'),
+    ruanganPasien: row.get('Ruangan Pasien') || row.get('RM & Ruang')?.split('-')[1]?.trim() || '-', // Fallback to old format
     waktuInsiden: row.get('Waktu Insiden'),
     lokasi: row.get('Lokasi'),
     jenis: row.get('Jenis'),
@@ -217,7 +219,7 @@ export async function addAksesRow(data: any) {
 // PUSH NOTIFICATION SUBSCRIPTIONS (Tab "subscriptions")
 // ==========================================
 export async function getSubscriptionSheet() {
-  const doc = await getDoc();
+  const doc = await getSpreadsheet();
   if (!doc) return null;
   return Object.values(doc.sheetsByTitle).find(s => s.title.toLowerCase() === 'subscriptions') || null;
 }

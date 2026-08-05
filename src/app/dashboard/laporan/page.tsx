@@ -5,9 +5,9 @@ import { Filter } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const DUMMY_REPORTS = [
-  { id: "123", tanggal: "02 Ags 2026", pasien: "Siti Aminah", rmRoom: "RM987654 - ICU", jenis: "KTD", grading: "MERAH", status: "Investigasi RCA" },
-  { id: "124", tanggal: "01 Ags 2026", pasien: "Budi Santoso", rmRoom: "RM123456 - Melati 3", jenis: "KNC", grading: "KUNING", status: "Investigasi Sederhana" },
-  { id: "125", tanggal: "30 Jul 2026", pasien: "Joko Anwar", rmRoom: "RM456789 - Mawar 1", jenis: "KPC", grading: "BIRU", status: "Selesai / Ditutup" },
+  { id: "123", tanggal: "02 Ags 2026", pasien: "Siti Aminah", noRm: "RM987654", ruanganPasien: "ICU", jenis: "KTD", grading: "MERAH", status: "Investigasi RCA" },
+  { id: "124", tanggal: "01 Ags 2026", pasien: "Budi Santoso", noRm: "RM123456", ruanganPasien: "Melati 3", jenis: "KNC", grading: "KUNING", status: "Investigasi Sederhana" },
+  { id: "125", tanggal: "30 Jul 2026", pasien: "Joko Anwar", noRm: "RM456789", ruanganPasien: "Mawar 1", jenis: "KPC", grading: "BIRU", status: "Selesai / Ditutup" },
 ];
 
 export default function LaporanPage() {
@@ -73,7 +73,7 @@ export default function LaporanPage() {
                 </td>
                 <td style={{ padding: '1rem', fontSize: '0.875rem' }}>
                   <strong style={{ display: 'block', textTransform: 'capitalize' }}>{report.pasien || report.pasienName}</strong>
-                  <span style={{color: 'hsl(var(--text-muted))'}}>{report.rmRoom}</span>
+                  <span style={{color: 'hsl(var(--text-muted))'}}>{report.noRm || '-'} - {report.ruanganPasien || '-'}</span>
                 </td>
                 <td style={{ padding: '1rem', fontSize: '0.875rem' }}>{report.jenis}</td>
                 <td style={{ padding: '1rem', fontSize: '0.875rem' }}>

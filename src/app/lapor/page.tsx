@@ -61,6 +61,9 @@ export default function LaporInsidenPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
+  const [manualNama, setManualNama] = useState("");
+  const [manualRuangan, setManualRuangan] = useState("");
+
   const [namaPelapor, setNamaPelapor] = useState("");
   const [unitPelapor, setUnitPelapor] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
@@ -111,6 +114,8 @@ export default function LaporInsidenPage() {
       }
       
       setPatientData(data);
+      setManualNama(data.name);
+      setManualRuangan(`${data.room} - ${data.bed || '-'}`);
     } catch (err: any) {
       setError(err.message || "Gagal menghubungi SIMRS");
     } finally {
@@ -154,8 +159,9 @@ export default function LaporInsidenPage() {
       tanggal: formattedDate,
       namaPelapor: isAnonymous ? "Anonim" : namaPelapor,
       unitPelapor: unitPelapor,
-      pasienName: patientData ? patientData.name : "Pasien Belum Dicari",
-      rmRoom: patientData ? `${rm} - ${patientData.room} (Bed: ${patientData.bed || '-'})` : `${rm} - ${unitPelapor}`,
+      noRm: rm || "-",
+      pasienName: manualNama || "Tidak Disebutkan",
+      ruanganPasien: manualRuangan || "-",
       waktuInsiden: waktuRaw,
       lokasi: formData.get("lokasi") as string,
       jenis: formData.get("jenis") as string,
@@ -279,6 +285,17 @@ export default function LaporInsidenPage() {
                 </button>
               </div>
               {error && <span style={{ color: 'hsl(var(--risk-red))', fontSize: '0.75rem', marginTop: '0.25rem' }}>{error}</span>}
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label">Nama Pasien</label>
+                <input type="text" className="form-input" value={manualNama} onChange={e => setManualNama(e.target.value)} placeholder="Nama lengkap pasien" required />
+              </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label">Ruangan / Bed Pasien</label>
+                <input type="text" className="form-input" value={manualRuangan} onChange={e => setManualRuangan(e.target.value)} placeholder="Cth: Melati 3 - Bed 2" required />
+              </div>
             </div>
 
             {patientData && (
