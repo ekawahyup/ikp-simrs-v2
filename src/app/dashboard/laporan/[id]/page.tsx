@@ -16,6 +16,7 @@ export default function LaporanDetailPage() {
   const [saved, setSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isAnalyzingAI, setIsAnalyzingAI] = useState(false);
+  const [aiInsights, setAiInsights] = useState<any>(null);
   const [reportStatus, setReportStatus] = useState<string>("Laporan Baru");
 
   useEffect(() => {
@@ -86,6 +87,7 @@ export default function LaporanDetailPage() {
       return;
     }
     setIsAnalyzingAI(true);
+    setAiInsights(null);
     try {
       const res = await fetch("/api/gemini", {
         method: "POST",
@@ -95,14 +97,15 @@ export default function LaporanDetailPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Gagal menganalisis");
       
+      setAiInsights(data);
       if (data.probabilitas && data.dampak) {
         setProb(data.probabilitas);
         setImpact(data.dampak);
       } else {
-        alert("AI gagal memberikan nilai Probabilitas dan Dampak secara akurat. Silakan isi manual.");
+        alert("AI gagal memberikan nilai Probabilitas dan Dampak secara akurat, namun referensi analisa tetap ditampilkan.");
       }
     } catch (err: any) {
-      alert("Gagal menganalisis dengan AI: " + err.message);
+      alert("Sedang terjadi antrean tinggi di server Google Gemini (503 High Demand). Silakan coba klik tombol Prediksi AI beberapa detik lagi.\n\nDetail: " + err.message);
     } finally {
       setIsAnalyzingAI(false);
     }
@@ -167,6 +170,40 @@ export default function LaporanDetailPage() {
               </div>
             </div>
           </div>
+
+          {/* AI Insights Card */}
+          {aiInsights && (
+            <div className="glass-panel" style={{ padding: '2rem', background: 'linear-gradient(135deg, hsla(var(--risk-purple), 0.05), hsla(var(--primary), 0.05))', border: '1px solid hsla(var(--risk-purple), 0.3)' }}>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'hsl(var(--risk-purple))' }}>
+                <span style={{ fontSize: '1.25rem' }}>🧠</span> Referensi Analisis AI
+              </h3>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                <div>
+                  <span style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))', fontWeight: 600 }}>Saran Kategori</span>
+                  <strong style={{ display: 'block', fontSize: '0.875rem' }}>{aiInsights.kategori}</strong>
+                </div>
+                <div>
+                  <span style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))', fontWeight: 600 }}>Saran Grading Pita</span>
+                  <strong style={{ display: 'block', fontSize: '0.875rem', color: aiInsights.grading === 'MERAH' ? 'hsl(var(--risk-red))' : aiInsights.grading === 'KUNING' ? 'hsl(var(--risk-yellow))' : aiInsights.grading === 'HIJAU' ? 'hsl(var(--risk-green))' : 'hsl(var(--primary))' }}>Pita {aiInsights.grading}</strong>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <span style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))', fontWeight: 600 }}>Alasan Grading Medis</span>
+                <p style={{ fontSize: '0.875rem', margin: 0, marginTop: '0.25rem', color: 'hsl(var(--text-main))' }}>{aiInsights.alasan_grading}</p>
+              </div>
+
+              <div>
+                <span style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))', fontWeight: 600 }}>Rekomendasi Investigasi 5-Whys</span>
+                <ul style={{ fontSize: '0.875rem', margin: '0.5rem 0 0 0', paddingLeft: '1.25rem', color: 'hsl(var(--text-main))' }}>
+                  {aiInsights.whys?.map((why: string, i: number) => (
+                    <li key={i}>{why}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Column: Matriks Grading Risiko */}
