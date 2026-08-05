@@ -20,11 +20,35 @@ export async function POST(req: Request) {
       // Jeda 2 detik untuk mensimulasikan pemrosesan AI
       await new Promise(resolve => setTimeout(resolve, 2000));
       
+      const kronologiLower = kronologi.toLowerCase();
+      let kategori = "KPC (Kejadian Potensial Cedera)";
+      let grading = "KUNING";
+      let alasan = "Terdapat potensi cedera sedang jika tidak segera ditangani, namun belum mengenai pasien secara langsung.";
+      let ringkasan = "Pelapor menemukan potensi bahaya berdasarkan kronologi yang disebutkan, yang memerlukan perbaikan sistem.";
+      
+      // Simple keyword-based mock for presentation purposes
+      if (kronologiLower.includes("meninggal") || kronologiLower.includes("mati") || kronologiLower.includes("fatal") || kronologiLower.includes("salah pemberian obat")) {
+        kategori = "SENTINEL (Kejadian Sentinel)";
+        grading = "MERAH";
+        alasan = "Insiden ini mengakibatkan kematian atau cedera permanen yang sangat fatal pada pasien, memerlukan investigasi RCA segera.";
+        ringkasan = "Terjadi insiden sangat fatal yang mengakibatkan hilangnya nyawa atau cedera berat pada pasien.";
+      } else if (kronologiLower.includes("jatuh") || kronologiLower.includes("luka") || kronologiLower.includes("pendarahan")) {
+        kategori = "KTD (Kejadian Tidak Diharapkan)";
+        grading = "MERAH";
+        alasan = "Insiden ini telah mengakibatkan cedera fisik pada pasien yang memerlukan penanganan medis lebih lanjut.";
+        ringkasan = "Pasien mengalami cedera fisik akibat insiden yang terjadi di area perawatan.";
+      } else if (kronologiLower.includes("hampir") || kronologiLower.includes("nyaris") || kronologiLower.includes("segera disadari")) {
+        kategori = "KNC (Kejadian Nyaris Cedera)";
+        grading = "BIRU";
+        alasan = "Insiden hampir terjadi dan berpotensi mencederai pasien, namun berhasil dicegah sebelum mengenai pasien.";
+        ringkasan = "Potensi insiden berhasil dicegah oleh petugas sebelum mencapai pasien.";
+      }
+
       return NextResponse.json({
-        kategori: "KPC (Kejadian Potensial Cedera)",
-        grading: "KUNING",
-        alasan_grading: "Terdapat potensi cedera sedang jika tidak segera ditangani, namun belum mengenai pasien secara langsung.",
-        ringkasan: "Pelapor menemukan potensi bahaya berdasarkan kronologi yang disebutkan, yang memerlukan perbaikan sistem.",
+        kategori: kategori,
+        grading: grading,
+        alasan_grading: alasan,
+        ringkasan: ringkasan,
         whys: [
           "Mengapa kejadian ini bisa terjadi di ruangan tersebut?",
           "Mengapa prosedur standar (SPO) tidak berjalan dengan baik?",
