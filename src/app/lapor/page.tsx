@@ -64,6 +64,7 @@ export default function LaporInsidenPage() {
 
   const [manualNama, setManualNama] = useState("");
   const [manualRuangan, setManualRuangan] = useState("");
+  const [lokasiKejadian, setLokasiKejadian] = useState("");
 
   const [namaPelapor, setNamaPelapor] = useState("");
   const [unitPelapor, setUnitPelapor] = useState("");
@@ -119,12 +120,16 @@ export default function LaporInsidenPage() {
           setPatientData(data[0]);
           setPatientOptions([]);
           setManualNama(data[0].name);
-          setManualRuangan(`${data[0].room} - ${data[0].bed || '-'}`);
+          const roomStr = `${data[0].room} - ${data[0].bed || '-'}`;
+          setManualRuangan(roomStr);
+          setLokasiKejadian(roomStr); // Auto-fill lokasi
         } else {
           setPatientOptions(data);
           setPatientData(data[0]); // Default to first
           setManualNama(data[0].name);
-          setManualRuangan(`${data[0].room} - ${data[0].bed || '-'}`);
+          const roomStr = `${data[0].room} - ${data[0].bed || '-'}`;
+          setManualRuangan(roomStr);
+          setLokasiKejadian(roomStr); // Auto-fill lokasi
         }
       } else {
         throw new Error("Format data SIMRS tidak sesuai");
@@ -176,7 +181,7 @@ export default function LaporInsidenPage() {
       pasienName: manualNama || "Tidak Disebutkan",
       ruanganPasien: manualRuangan || "-",
       waktuInsiden: waktuRaw,
-      lokasi: formData.get("lokasi") as string,
+      lokasi: lokasiKejadian || (formData.get("lokasi") as string),
       jenis: formData.get("jenis") as string,
       kronologi: kronologi,
       grading: aiInsights ? aiInsights.grading : "BELUM DIGRADING", 
@@ -320,7 +325,9 @@ export default function LaporInsidenPage() {
                   const selected = patientOptions[Number(e.target.value)];
                   setPatientData(selected);
                   setManualNama(selected.name);
-                  setManualRuangan(`${selected.room} - ${selected.bed || '-'}`);
+                  const roomStr = `${selected.room} - ${selected.bed || '-'}`;
+                  setManualRuangan(roomStr);
+                  setLokasiKejadian(roomStr); // Auto-fill when dropdown changes
                 }}>
                   {patientOptions.map((opt, i) => (
                     <option key={i} value={i}>{opt.room} - {opt.bed || '-'} (Tgl Masuk: {opt.tglRegistrasi})</option>
@@ -368,7 +375,15 @@ export default function LaporInsidenPage() {
               </div>
               <div className="form-group">
                 <label className="form-label"><MapPin size={14} style={{ display: 'inline', marginRight: '4px' }} /> Lokasi Kejadian</label>
-                <input type="text" name="lokasi" placeholder="Cth: Kamar Operasi 2" className="form-input" required />
+                <input 
+                  type="text" 
+                  name="lokasi" 
+                  placeholder="Cth: Kamar Operasi 2" 
+                  className="form-input" 
+                  value={lokasiKejadian}
+                  onChange={(e) => setLokasiKejadian(e.target.value)}
+                  required 
+                />
               </div>
             </div>
 
