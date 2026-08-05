@@ -57,8 +57,8 @@ export async function POST(req: Request) {
       });
     }
 
-    // Pemrosesan Real AI menggunakan Gemini (Fallback ke gemini-pro agar kompatibel dengan semua jenis API Key)
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    // Pemrosesan Real AI menggunakan Gemini (Menggunakan gemini-flash-latest agar selalu kompatibel dan cepat)
+    const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
     const prompt = `
       Anda adalah "AI Patient Safety Expert" di RSD Gunung Jati.
