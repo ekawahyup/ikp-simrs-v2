@@ -138,15 +138,15 @@ export default function DashboardCharts({ reports }: Props) {
         <h3 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '1rem', color: 'hsl(var(--text-main))', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <AlertTriangle size={18} style={{ color: 'hsl(var(--primary))' }}/> Kategori Sumber Insiden
         </h3>
-        <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
+        <div style={{ flex: 1, minHeight: 0, position: 'relative', marginTop: '1rem' }}>
           <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
+            <PieChart margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
               <Pie
                 data={jenisData}
                 cx="50%"
                 cy="50%"
-                innerRadius={60}
-                outerRadius={100}
+                innerRadius={50}
+                outerRadius={85}
                 paddingAngle={5}
                 dataKey="value"
                 stroke="none"
@@ -168,15 +168,15 @@ export default function DashboardCharts({ reports }: Props) {
         <h3 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '1rem', color: 'hsl(var(--text-main))', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <ShieldAlert size={18} style={{ color: 'hsl(var(--text-main))' }}/> Beban Grading (Risiko)
         </h3>
-        <div style={{ flex: 1, minHeight: 0 }}>
+        <div style={{ flex: 1, minHeight: 0, marginTop: '1rem' }}>
           <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
+            <PieChart margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
               <Pie
                 data={gradingData}
                 cx="50%"
                 cy="50%"
                 innerRadius={0}
-                outerRadius={110}
+                outerRadius={90}
                 dataKey="value"
                 stroke="hsl(var(--bg-body))"
                 strokeWidth={2}
