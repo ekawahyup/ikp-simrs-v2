@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
-import { ShieldCheck, Calendar, Activity, CheckCircle, BarChart3, AlertTriangle, Stethoscope, Building, Wind, Users } from "lucide-react";
+import { ShieldCheck, Calendar, Activity, CheckCircle, BarChart3 } from "lucide-react";
 import { getAllLaporan } from "@/lib/googleSheets";
+import DashboardCharts from "@/components/DashboardCharts";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -47,30 +48,6 @@ export default async function DashboardPage() {
     tertangani,
     resolutionRate
   };
-
-  // Kategori didasarkan pada Jenis Insiden untuk kesederhanaan (karena 'kategori sumber' spesifik belum ada di sheet)
-  const catMap: Record<string, number> = {};
-  reports.forEach((r: any) => {
-    const jenis = r.jenis || 'Lainnya';
-    catMap[jenis] = (catMap[jenis] || 0) + 1;
-  });
-
-  const categories = Object.keys(catMap).map(k => {
-    const count = catMap[k];
-    const percent = totalReports > 0 ? Math.round((count / totalReports) * 100) : 0;
-    let icon = <Activity size={18} />;
-    let color = "hsl(var(--primary))";
-    
-    if (k.includes("KTD") || k.includes("SENTINEL")) {
-      icon = <Stethoscope size={18} />;
-      color = "hsl(var(--risk-red))";
-    } else if (k.includes("KNC") || k.includes("KTC")) {
-      icon = <AlertTriangle size={18} />;
-      color = "hsl(var(--risk-kuning, 48 96% 53%))";
-    }
-
-    return { name: k, count, icon, color, percent };
-  }).sort((a, b) => b.count - a.count);
 
   return (
     <>
@@ -138,61 +115,9 @@ export default async function DashboardPage() {
 
       </div>
 
-      {/* Baris 2: Analitik Kategori & Grading */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.25rem' }}>
-        
-        {/* Kolom Kiri: Kategori Insiden */}
-        <div className="glass-panel" style={{ padding: '2rem' }}>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <AlertTriangle size={20} style={{ color: 'hsl(var(--primary))' }} /> Kategori Sumber Insiden (Tahun Ini)
-          </h3>
-          
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {categories.map((cat, index) => (
-              <div key={index}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 600 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ color: cat.color }}>{cat.icon}</span> {cat.name}
-                  </div>
-                  <span>{cat.count} Kasus ({cat.percent}%)</span>
-                </div>
-                {/* Progress Bar */}
-                <div style={{ width: '100%', height: '8px', background: 'hsl(var(--bg-body))', borderRadius: '999px', overflow: 'hidden' }}>
-                  <div style={{ width: `${cat.percent}%`, height: '100%', background: cat.color, borderRadius: '999px', transition: 'width 1s ease-in-out' }}></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Kolom Kanan: Grading Pita */}
-        <div className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>Beban Grading (Aktif)</h3>
-            <p style={{ fontSize: '0.875rem', color: 'hsl(var(--text-muted))', marginBottom: '2rem' }}>Laporan yang sedang ditangani saat ini.</p>
-          </div>
-          
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', background: 'hsla(var(--risk-red), 0.1)', borderRadius: 'var(--radius-md)', border: '1px solid hsla(var(--risk-red), 0.2)' }}>
-              <strong style={{ color: 'hsl(var(--risk-red))' }}>Pita Merah (RCA)</strong>
-              <span style={{ fontWeight: 800 }}>{countMerah}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', background: 'hsla(var(--risk-kuning, 48 96% 53%), 0.1)', borderRadius: 'var(--radius-md)', border: '1px solid hsla(var(--risk-kuning, 48 96% 53%), 0.2)' }}>
-              <strong style={{ color: 'hsl(var(--risk-kuning, 48 96% 53%))' }}>Pita Kuning</strong>
-              <span style={{ fontWeight: 800 }}>{countKuning}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', background: 'hsla(var(--risk-biru, 217 91% 60%), 0.1)', borderRadius: 'var(--radius-md)', border: '1px solid hsla(var(--risk-biru, 217 91% 60%), 0.2)' }}>
-              <strong style={{ color: 'hsl(var(--risk-biru, 217 91% 60%))' }}>Pita Biru</strong>
-              <span style={{ fontWeight: 800 }}>{countBiru}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', background: 'hsla(var(--risk-green), 0.1)', borderRadius: 'var(--radius-md)', border: '1px solid hsla(var(--risk-green), 0.2)' }}>
-              <strong style={{ color: 'hsl(var(--risk-green))' }}>Pita Hijau</strong>
-              <span style={{ fontWeight: 800 }}>{countHijau}</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
+      {/* Baris 2: Analitik Visual (Charts) */}
+      <DashboardCharts reports={reports} />
+      
     </>
   );
 }
