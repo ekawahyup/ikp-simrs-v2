@@ -14,6 +14,7 @@ export default function LaporanDetailPage() {
   const [prob, setProb] = useState<number>(1);
   const [impact, setImpact] = useState<number>(1);
   const [saved, setSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const fetchReport = async () => {
@@ -43,10 +44,43 @@ export default function LaporanDetailPage() {
     return 'var(--risk-blue)';
   };
 
-  const handleSaveGrading = () => {
-    // Mock save logic
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  const handleSaveGrading = async () => {
+    if (!report) return;
+    setIsSaving(true);
+    
+    // Tentukan status investigasi berdasarkan warna pita
+    let status = "Investigasi Sederhana (Maks 1 Minggu)";
+    if (riskResult === 'MERAH' || riskResult === 'KUNING') {
+      status = "Investigasi RCA (Maks 45 Hari)";
+    }
+    if (riskResult === 'BIRU') {
+      status = "Investigasi Sederhana (Maks 2 Minggu)";
+    }
+
+    try {
+      const res = await fetch('/api/laporan', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: params.id,
+          grading: riskResult,
+          status: status
+        })
+      });
+      
+      if (res.ok) {
+        setSaved(true);
+        // Perbarui state lokal agar tampilan sinkron
+        setReport({ ...report, grading: riskResult, status: status });
+        setTimeout(() => setSaved(false), 3000);
+      } else {
+        alert("Gagal menyimpan grading. Coba lagi.");
+      }
+    } catch (e) {
+      alert("Terjadi kesalahan saat menyimpan.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -145,8 +179,8 @@ export default function LaporanDetailPage() {
             <div style={{ fontSize: '0.875rem', color: 'hsl(var(--text-muted))' }}>Skor Risiko: <strong>{score}</strong></div>
           </div>
 
-          <button onClick={handleSaveGrading} className="btn btn-primary hover-lift" style={{ width: '100%', marginTop: '1.5rem', padding: '1rem' }}>
-            {saved ? <><CheckCircle size={18}/> Disimpan</> : 'Simpan Verifikasi Grading'}
+          <button onClick={handleSaveGrading} disabled={isSaving || !report} className="btn btn-primary hover-lift" style={{ width: '100%', marginTop: '1.5rem', padding: '1rem' }}>
+            {isSaving ? 'Menyimpan...' : saved ? <><CheckCircle size={18}/> Disimpan</> : 'Simpan Verifikasi Grading'}
           </button>
         </div>
 

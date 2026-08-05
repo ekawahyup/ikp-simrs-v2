@@ -83,6 +83,30 @@ export async function getAllLaporan() {
   }));
 }
 
+export async function updateLaporanGrading(id: string, grading: string, status: string) {
+  const doc = await getSpreadsheet();
+  if (!doc) return false;
+
+  try {
+    const sheet = doc.sheetsByIndex[0];
+    const rows = await sheet.getRows();
+    
+    const targetRow = rows.find(row => row.get('ID') === String(id));
+    if (targetRow) {
+      targetRow.assign({
+        'Grading AI': grading,
+        'Status': status
+      });
+      await targetRow.save();
+      return true;
+    }
+    return false;
+  } catch (e) {
+    console.error("Failed to update grading in Sheets:", e);
+    return false;
+  }
+}
+
 // ==========================================
 // MASTER PEGAWAI (Sheet Index 1)
 // ==========================================

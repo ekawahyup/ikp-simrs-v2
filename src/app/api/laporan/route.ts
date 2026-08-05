@@ -123,3 +123,30 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function PUT(req: Request) {
+  try {
+    const session = await auth();
+    if (!session || !session.user || (session.user.role !== 'VERIFIKATOR' && session.user.role !== 'KOMITE_MUTU' && session.user.role !== 'ADMIN_IT')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id, grading, status } = await req.json();
+    
+    if (!id || !grading || !status) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    const { updateLaporanGrading } = await import('@/lib/googleSheets');
+    const success = await updateLaporanGrading(id, grading, status);
+    
+    if (success) {
+      return NextResponse.json({ message: 'Grading berhasil diupdate' });
+    } else {
+      return NextResponse.json({ error: 'Laporan tidak ditemukan atau gagal diupdate' }, { status: 404 });
+    }
+  } catch (error: any) {
+    console.error("GSheet Put Error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
